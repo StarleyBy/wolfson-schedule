@@ -391,11 +391,9 @@ const DEFAULT_DOCTORS=[
 ];
 
 function getDocs(){try{const d=JSON.parse(localStorage.getItem(SK_DOCS));return d&&d.length?d:DEFAULT_DOCTORS}catch{return DEFAULT_DOCTORS}}
-function setDocs(d){localStorage.setItem(SK_DOCS,JSON.stringify(d))}
 function getSched(){try{return JSON.parse(localStorage.getItem(SK_SCHED)||'{}')}catch{return{}}}
-function setSched(d){localStorage.setItem(SK_SCHED,JSON.stringify(d))}
 function getWish(){try{return JSON.parse(localStorage.getItem(SK_WISH)||'{}')}catch{return{}}}
-function setWish(d){localStorage.setItem(SK_WISH,JSON.stringify(d))}
+// setDocs / setSched / setWish defined below with Gist sync
 function mk(y,m){return y+'-'+String(m+1).padStart(2,'0')}
 
 const DCLS=['c0','c1','c2','c3','c4','c5','c6','c7','c8','c9'];
@@ -510,6 +508,7 @@ function go(name,btn){
   if(btn)btn.classList.add('active');
   if(name==='wishes'){wDraft=null;renderWishes(true);}
   else if(name==='reports'){renderReports();}
+  else if(name==='settings'){renderAll();loadTokenField();}
   else renderAll();
 }
 
@@ -1259,12 +1258,10 @@ async function pushToGist() {
 }
 
 // Обёртки setDocs/setSched/setWish → автосинк
-const _setDocs  = setDocs;
-const _setSched = setSched;
-const _setWish  = setWish;
-function setDocs(d)  { _setDocs(d);  schedulePush(); }
-function setSched(d) { _setSched(d); schedulePush(); }
-function setWish(d)  { _setWish(d);  schedulePush(); }
+// Используем прямые вызовы localStorage, чтобы не было рекурсии
+function setDocs(d)  { localStorage.setItem(SK_DOCS,  JSON.stringify(d)); schedulePush(); }
+function setSched(d) { localStorage.setItem(SK_SCHED, JSON.stringify(d)); schedulePush(); }
+function setWish(d)  { localStorage.setItem(SK_WISH,  JSON.stringify(d)); schedulePush(); }
 
 let pushTimer = null;
 function schedulePush() {
@@ -1366,12 +1363,7 @@ async function forcePull(){
   showToast(lang==='he'?'הורד ✓':'Pulled ✓');
 }
 
-// Load token into field when page becomes visible
-const _go = go;
-function go(name, btn){
-  _go(name, btn);
-  if(name==='settings') loadTokenField();
-}
+// Token field is loaded inside go() directly — no wrapper needed
 
 // ═══ INIT ═══
 (function(){
