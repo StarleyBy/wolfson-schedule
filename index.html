@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>תורנויות — Wolfson</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bg:#07090f;--s1:#0f1623;--s2:#141e30;--s3:#1a2640;--s4:#1f2d4a;
+  --brd:#253349;--acc:#3b82f6;--acc2:#60a5fa;--pur:#7c3aed;--pur2:#a78bfa;
+  --tx:#e2e8f0;--t2:#94a3b8;--t3:#64748b;--t4:#3d5068;
+  --grn:#10b981;--yel:#f59e0b;--red:#ef4444;
+  --fb:#0e0818;--fb2:#6d28d9;
+  --r:14px;--rs:8px;--fn:'Heebo',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh;overflow-x:hidden}
+[data-lang="en"]{direction:ltr}
+[data-lang="he"] .en{display:none!important}
+[data-lang="en"] .he{display:none!important}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--brd);border-radius:2px}
+.top{position:sticky;top:0;z-index:200;background:rgba(7,9,15,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--brd);height:54px;padding:0 14px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:9px}
+.bi{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 0 14px rgba(59,130,246,.4);flex-shrink:0}
+.bt{font-size:12px;font-weight:700;color:var(--acc2);letter-spacing:.03em}
+.tr{display:flex;align-items:center;gap:8px}
+.lp{background:var(--s2);border:1px solid var(--brd);color:var(--t2);font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;cursor:pointer;font-family:var(--fn);transition:all .18s}
+.lp:hover{background:var(--s3);color:var(--tx)}
+.uch{display:flex;align-items:center;gap:7px;background:var(--s2);border:1px solid var(--brd);border-radius:20px;padding:4px 11px 4px 6px;cursor:pointer;transition:all .18s}
+.uch:hover{background:var(--s3)}
+.uav{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0}
+.unm{font-size:12px;font-weight:600;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(7,9,15,.96);backdrop-filter:blur(16px);border-top:1px solid var(--brd);display:flex;justify-content:space-around;padding:6px 0 max(6px,env(safe-area-inset-bottom))}
+.nv{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 10px;border-radius:10px;background:none;border:none;color:var(--t3);font-family:var(--fn);font-size:9px;font-weight:600;transition:all .18s;min-width:48px}
+.nv .ni{font-size:18px;transition:transform .2s}
+.nv.active{color:var(--acc2)}.nv.active .ni{transform:scale(1.18)}
+.page{display:none;padding:14px 12px 80px;animation:fi .2s ease}
+.page.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+#pg-login{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px 20px}
+.lcard{width:100%;max-width:360px;background:var(--s1);border:1px solid var(--brd);border-radius:22px;padding:34px 26px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.llogo{text-align:center;margin-bottom:26px}
+.lhb{width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 14px;box-shadow:0 0 36px rgba(59,130,246,.4)}
+.llogo h1{font-size:17px;font-weight:800}.llogo p{font-size:11px;color:var(--t3);margin-top:4px}
+.fg{margin-bottom:14px}
+.fl{font-size:11px;color:var(--t2);margin-bottom:5px;display:block;font-weight:600}
+.finp{width:100%;background:var(--s2);border:1px solid var(--brd);border-radius:var(--rs);padding:11px 13px;color:var(--tx);font-family:var(--fn);font-size:14px;outline:none;transition:border-color .18s}
+.finp:focus{border-color:var(--acc)}.finp.err{border-color:var(--red)}
+.finp[dir="ltr"]{direction:ltr;text-align:left}
+.bp{width:100%;background:linear-gradient(135deg,#3b82f6,#6366f1);border:none;border-radius:var(--rs);padding:13px;color:#fff;font-family:var(--fn);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 18px rgba(59,130,246,.32)}
+.bp:hover{opacity:.9;transform:translateY(-1px)}.bp:active{transform:none}
+.lerr{color:var(--red);font-size:12px;margin-top:8px;text-align:center;display:none}
+.stitle{font-size:14px;font-weight:700;margin-bottom:13px;display:flex;align-items:center;gap:8px}
+.stitle::before{content:'';width:3px;height:16px;background:var(--acc);border-radius:2px;flex-shrink:0}
+.mhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px}
+.mtitle{font-size:19px;font-weight:800;flex:1;min-width:0}
+.mhr{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.ibtn{width:34px;height:34px;border-radius:50%;background:var(--s2);border:1px solid var(--brd);color:var(--t2);font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;flex-shrink:0}
+.ibtn:hover{background:var(--s3);color:var(--tx)}
+.ibox{background:var(--s2);border:1px solid var(--brd);border-radius:var(--rs);padding:10px 13px;font-size:12px;color:var(--t2);margin-bottom:14px;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.ibox-i{font-size:16px;flex-shrink:0;margin-top:1px}
+.sgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;background:var(--brd);border-radius:var(--r);overflow:hidden;border:1px solid var(--brd)}
+.dhdr{background:var(--s1);text-align:center;padding:7px 2px;font-size:9.5px;font-weight:700;color:var(--t3);letter-spacing:.04em}
+.dhdr.fh{color:var(--pur2)}
+.dc{background:var(--s1);min-height:66px;padding:5px 4px;position:relative}
+.dc.fr{background:var(--fb);border-top:2px solid var(--fb2)}
+.dc.mt{background:var(--s2);box-shadow:inset 0 0 0 1.5px var(--acc)}
+.dc.em{background:var(--bg)}
+.cc{background:var(--s1);min-height:80px;padding:5px 4px;cursor:pointer;position:relative;transition:background .14s}
+.cc:hover{background:var(--s2)}.cc.fr{background:var(--fb);border-top:2px solid var(--fb2)}
+.cc.em{background:var(--bg);cursor:default;pointer-events:none}
+.wc{background:var(--s1);min-height:52px;padding:5px 4px;cursor:pointer;position:relative;transition:background .14s}
+.wc:hover:not(.em){background:var(--s2)}.wc.fr{background:var(--fb);border-top:2px solid var(--fb2)}
+.wc.em{background:var(--bg);cursor:default;pointer-events:none}
+.wc.off{background:rgba(239,68,68,.12)}.wc.off .dn{color:var(--red)}
+.dn{font-size:10.5px;font-weight:800;color:var(--t4);margin-bottom:3px}
+.dc.mt .dn{color:var(--acc2)}
+.chip{display:block;border-radius:5px;padding:2px 5px;font-size:9px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.7;margin-bottom:2px}
+.slbl{font-size:8px;color:var(--t3);font-weight:600;display:block;margin-bottom:1px;line-height:1.4}
+.ech{background:var(--s3);color:var(--t4)}
+.ap{position:absolute;bottom:4px;right:4px;width:16px;height:16px;border-radius:50%;background:var(--s4);color:var(--t3);display:flex;align-items:center;justify-content:center;font-size:12px}
+.wbdg{position:absolute;top:3px;right:3px;width:15px;height:15px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800}
+.c0{background:rgba(59,130,246,.17);color:#93c5fd}.c1{background:rgba(16,185,129,.17);color:#6ee7b7}
+.c2{background:rgba(245,158,11,.17);color:#fcd34d}.c3{background:rgba(239,68,68,.17);color:#fca5a5}
+.c4{background:rgba(168,85,247,.17);color:#d8b4fe}.c5{background:rgba(236,72,153,.17);color:#f9a8d4}
+.c6{background:rgba(20,184,166,.17);color:#5eead4}.c7{background:rgba(249,115,22,.17);color:#fdba74}
+.c8{background:rgba(99,102,241,.17);color:#a5b4fc}.c9{background:rgba(251,191,36,.17);color:#fde68a}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:18px}
+.li{display:flex;align-items:center;gap:8px;background:var(--s1);border:1px solid var(--brd);border-radius:var(--rs);padding:7px 10px}
+.ldot{width:26px;height:18px;border-radius:4px;flex-shrink:0}
+.s3g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.sc{background:var(--s1);border:1px solid var(--brd);border-radius:var(--rs);padding:12px 8px;text-align:center}
+.sv{font-size:22px;font-weight:900;color:var(--acc2)}.sl{font-size:9.5px;color:var(--t3);margin-top:2px}
+.dsg2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.dsg{background:var(--s1);border:1px solid var(--brd);border-radius:var(--rs);padding:8px 10px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.dcard{background:var(--s1);border:1px solid var(--brd);border-radius:var(--rs);padding:13px 14px;display:flex;align-items:center;gap:11px;margin-bottom:8px}
+.dav{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0}
+.din{flex:1;min-width:0}.dn2{font-size:14px;font-weight:700}.dr{font-size:11px;color:var(--t3);margin-top:2px}
+.badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(59,130,246,.15);color:var(--acc2)}
+.badge.adm{background:rgba(168,85,247,.15);color:var(--pur2)}.badge.sup{background:rgba(245,158,11,.15);color:#fcd34d}
+.badge.sec{background:rgba(20,184,166,.15);color:#5eead4}.badge.stf{background:rgba(100,116,139,.15);color:var(--t2)}
+.bs{background:linear-gradient(135deg,#10b981,#059669);border:none;border-radius:var(--rs);padding:13px;color:#fff;font-family:var(--fn);font-size:14px;font-weight:700;cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(16,185,129,.3);transition:all .2s}
+.bs:hover{opacity:.9}
+.bpdf{display:flex;align-items:center;gap:7px;background:var(--s2);border:1px solid var(--brd);border-radius:var(--rs);padding:8px 13px;color:var(--t2);font-family:var(--fn);font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap}
+.bpdf:hover{background:var(--s3);color:var(--tx)}
+.bd{background:none;border:1px solid rgba(239,68,68,.3);border-radius:var(--rs);padding:11px;color:var(--red);font-family:var(--fn);font-size:13px;font-weight:600;cursor:pointer;width:100%;transition:all .18s;margin-top:8px}
+.bd:hover{background:rgba(239,68,68,.07)}
+.badd{display:flex;align-items:center;justify-content:center;gap:7px;background:var(--s2);border:1px dashed var(--brd);border-radius:var(--rs);padding:12px;color:var(--t2);font-family:var(--fn);font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;width:100%;margin-bottom:14px}
+.badd:hover{background:var(--s3);color:var(--tx);border-color:var(--acc)}
+.bsm{background:var(--s2);border:1px solid var(--brd);border-radius:var(--rs);padding:7px 13px;color:var(--t2);font-family:var(--fn);font-size:12px;font-weight:600;cursor:pointer;transition:all .18s}
+.bsm:hover{background:var(--s3);color:var(--tx)}
+.bsm.pri{background:rgba(59,130,246,.15);border-color:var(--acc);color:var(--acc2)}
+.bsm.pri:hover{background:rgba(59,130,246,.25)}
+.bsm.dan{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--red)}
+.bsm.dan:hover{background:rgba(239,68,68,.2)}
+.mpills{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+.mpill{background:var(--s2);border:1px solid var(--brd);border-radius:20px;padding:6px 15px;font-size:12px;cursor:pointer;color:var(--t2);transition:all .18s}
+.mpill:hover{background:var(--s3);color:var(--tx)}.mpill.ac{background:var(--acc);border-color:var(--acc);color:#fff}
+.cpills{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.cpill{background:var(--s2);border:1px solid var(--brd);border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;color:var(--t2);transition:all .18s}
+.cpill:hover{background:var(--s3)}.cpill.ac{background:var(--pur);border-color:var(--pur);color:#fff}
+.ctrow{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.ctc{display:flex;align-items:center;gap:5px;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700}
+.ctn{font-size:15px;font-weight:900}
+.overlay{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.65);backdrop-filter:blur(5px);display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .22s}
+.overlay.open{opacity:1;pointer-events:all}
+.msh{background:var(--s1);border:1px solid var(--brd);border-radius:20px 20px 0 0;padding:18px 18px max(18px,env(safe-area-inset-bottom));width:100%;transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);max-height:88vh;overflow-y:auto}
+.overlay.open .msh{transform:none}
+.mhdl{width:34px;height:4px;background:var(--brd);border-radius:2px;margin:0 auto 16px}
+.mtm{font-size:15px;font-weight:800;margin-bottom:14px}
+.dopt{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:var(--rs);cursor:pointer;transition:background .14s;border:1px solid transparent;margin-bottom:5px}
+.dopt:hover{background:var(--s2)}.dopt.sel{background:var(--s2);border-color:var(--acc)}.dopt.unav{opacity:.3;cursor:not-allowed;pointer-events:none}
+.dodot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.don{font-size:14px;font-weight:600}.dos{font-size:10px;color:var(--red);margin-top:1px}
+.mcanc{margin-top:10px;padding:12px;text-align:center;color:var(--t3);cursor:pointer;font-size:13px}
+.mclr{margin-top:8px;padding:11px;text-align:center;color:var(--red);cursor:pointer;font-size:13px;border:1px solid rgba(239,68,68,.2);border-radius:var(--rs);transition:background .14s}
+.mclr:hover{background:rgba(239,68,68,.07)}
+.de-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.dlabel{font-size:10px;color:var(--t2);font-weight:600;margin-bottom:4px;display:block}
+.fsel{width:100%;background:var(--s2);border:1px solid var(--brd);border-radius:var(--rs);padding:10px 13px;color:var(--tx);font-family:var(--fn);font-size:13px;outline:none;cursor:pointer;appearance:none;transition:border-color .18s}
+.fsel:focus{border-color:var(--acc)}
+.sep{height:1px;background:var(--brd);margin:16px 0}
+/* REPORT / DASHBOARD */
+.rpt-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.rpt-tab{background:var(--s2);border:1px solid var(--brd);border-radius:20px;padding:7px 16px;font-size:12px;cursor:pointer;color:var(--t2);font-family:var(--fn);font-weight:600;transition:all .18s}
+.rpt-tab:hover{background:var(--s3);color:var(--tx)}.rpt-tab.ac{background:var(--acc);border-color:var(--acc);color:#fff}
+.rpt-month-sel{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+.rms{background:var(--s2);border:1px solid var(--brd);border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;color:var(--t2);transition:all .18s}
+.rms.ac{background:var(--acc);border-color:var(--acc);color:#fff}
+.rtable{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px}
+.rtable th{background:var(--s2);color:var(--t2);font-weight:700;padding:9px 10px;text-align:start;border-bottom:1px solid var(--brd);font-size:11px;white-space:nowrap}
+.rtable td{padding:8px 10px;border-bottom:1px solid var(--brd);vertical-align:top;line-height:1.5}
+.rtable tr:hover td{background:var(--s2)}
+.rtable .num{font-weight:800;color:var(--acc2);font-size:14px}
+.rtable .date-cell{white-space:nowrap}
+.rtable .fri-cell{color:var(--pur2);font-weight:600}
+.wscard{background:var(--s1);border:1px solid var(--brd);border-radius:var(--rs);padding:11px 13px;margin-bottom:7px}
+.wsrow{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.wspills{display:flex;flex-wrap:wrap;gap:4px}
+.wsp{background:rgba(239,68,68,.12);color:var(--red);border-radius:5px;padding:2px 9px;font-size:11px;font-weight:700}
+.wsp-none{font-size:11px;color:var(--t3)}
+.toast{position:fixed;top:65px;left:50%;transform:translateX(-50%);background:var(--grn);color:#fff;padding:9px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:400;opacity:0;pointer-events:none;transition:opacity .22s;white-space:nowrap}
+.toast.show{opacity:1}.toast.err{background:var(--red)}
+/* wishes doctor selector */
+.wdoc-sel{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;padding:10px;background:var(--s2);border-radius:var(--rs);border:1px solid var(--brd)}
+.wdoc-pill{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid transparent;transition:all .15s}
+.wdoc-pill.active{border-color:var(--acc)}
+@media print{.top,.bnav,.bpdf,.bs,.mhr,.noprt{display:none!important}body{background:#fff;color:#000}.sgrid{border:1px solid #ccc;border-radius:0}.dc,.dhdr{background:#fff!important;border:1px solid #ddd!important;box-shadow:none!important}.chip{border:1px solid #ccc}.page{display:block!important;padding:12px}#pg-schedule{display:block!important}}
+</style>
+</head>
+<body data-lang="he">
+
+<div id="pg-login">
+  <div class="lcard">
+    <div class="llogo">
+      <div class="lhb">🫀</div>
+      <h1><span class="he">מרכז רפואי וולפסון</span><span class="en">Wolfson Medical Center</span></h1>
+      <p><span class="he">מחלקת ניתוחי לב — תורנויות</span><span class="en">Cardiac Surgery — Duty Schedule</span></p>
+    </div>
+    <div class="fg">
+      <label class="fl"><span class="he">שם משתמש</span><span class="en">Username</span></label>
+      <input class="finp" id="li-u" placeholder="username" type="text" autocomplete="username" dir="ltr" style="text-align:left">
+    </div>
+    <div class="fg">
+      <label class="fl"><span class="he">סיסמה</span><span class="en">Password</span></label>
+      <input class="finp" id="li-p" placeholder="••••••" type="password" autocomplete="current-password">
+    </div>
+    <button class="bp" onclick="doLogin()"><span class="he">כניסה למערכת</span><span class="en">Sign In</span></button>
+    <div class="lerr" id="li-err"><span class="he">שם משתמש או סיסמה שגויים</span><span class="en">Invalid username or password</span></div>
+    <div style="margin-top:14px;text-align:center">
+      <button class="lp" onclick="toggleLang()" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--t3)">🌐 <span class="he">English</span><span class="en">עברית</span></button>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="top">
+    <div class="brand"><div class="bi">🫀</div><span class="bt"><span class="he">וולפסון לב</span><span class="en">Wolfson Cardiac</span></span></div>
+    <div class="tr">
+      <span id="sync-icon" title="sync">·</span>
+      <button class="lp" onclick="toggleLang()"><span class="he">EN</span><span class="en">HE</span></button>
+      <div class="uch" onclick="openLO()"><div class="uav" id="t-av"></div><span class="unm" id="t-nm"></span></div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div id="pg-schedule" class="page active">
+    <div class="mhdr">
+      <div class="mtitle" id="v-ttl"></div>
+      <div class="mhr">
+        <button class="bpdf" onclick="exportPDF()">📄 PDF</button>
+        <button class="ibtn" onclick="vMv(-1)">‹</button>
+        <button class="ibtn" onclick="vMv(1)">›</button>
+      </div>
+    </div>
+    <div id="v-grid" class="sgrid"></div>
+    <div style="margin-top:18px"><div class="stitle"><span class="he">אגדה</span><span class="en">Legend</span></div><div class="legend" id="v-leg"></div></div>
+    <div style="margin-top:18px"><div class="stitle"><span class="he">סטטיסטיקות</span><span class="en">Statistics</span></div><div id="v-stats"></div></div>
+  </div>
+
+  <!-- WISHES -->
+  <div id="pg-wishes" class="page">
+    <div class="stitle"><span class="he">מניעות לחודש הבא</span><span class="en">Unavailability — Next Month</span></div>
+    <div class="ibox"><span class="ibox-i">ℹ️</span><span><span class="he">סמן ימים שאינך יכול לעבוד. רופא עם מניעה ביום לא יופיע ברשימה בעת בניית הגרפיק.</span><span class="en">Mark days you cannot work. A doctor marked unavailable won't appear in the list for that day in the builder.</span></span></div>
+    <!-- doctor selector for admin/superadmin -->
+    <div id="w-doc-sel" style="display:none">
+      <div class="stitle" style="font-size:12px;margin-bottom:8px"><span class="he">בחר רופא</span><span class="en">Select Doctor</span></div>
+      <div class="wdoc-sel" id="w-doc-pills"></div>
+    </div>
+    <div class="mhdr"><div class="mtitle" id="w-ttl"></div></div>
+    <div id="w-grid" class="sgrid" style="margin-bottom:10px"></div>
+    <div id="w-saved-info" style="margin-bottom:10px;font-size:12px;color:var(--t3);text-align:center;display:none"></div>
+    <button class="bs" onclick="saveWishes()"><span class="he">💾 שמירת מניעות</span><span class="en">💾 Save</span></button>
+  </div>
+
+  <!-- CONSTRUCTOR -->
+  <div id="pg-constr" class="page" style="display:none">
+    <div class="stitle"><span class="he">בניית גרפיק</span><span class="en">Schedule Builder</span></div>
+    <div class="ibox"><span class="ibox-i">🔧</span><span><span class="he">בחר חודש ולחץ על תא לשיבוץ רופא. ביום שישי — שתי משמרות (עד ואחרי 13:00). רופאים עם מניעות מסומנים.</span><span class="en">Select month, tap a cell to assign. Fridays have two shifts. Doctors with restrictions are marked.</span></span></div>
+    <div class="cpills" id="c-pills"></div>
+    <div class="mhdr"><div class="mtitle" id="c-ttl"></div></div>
+    <div class="ctrow" id="c-ctrs"></div>
+    <div id="c-grid" class="sgrid" style="margin-bottom:16px"></div>
+    <button class="bs" onclick="saveCons()"><span class="he">📢 פרסום גרפיק</span><span class="en">📢 Publish Schedule</span></button>
+    <button class="bd" onclick="clearCons()"><span class="he">🗑 ניקוי טיוטה</span><span class="en">🗑 Clear Draft</span></button>
+  </div>
+
+  <!-- REPORTS (secretary) -->
+  <div id="pg-reports" class="page" style="display:none">
+    <div class="stitle"><span class="he">דוחות ודשבורד</span><span class="en">Reports & Dashboard</span></div>
+    <div class="rpt-tabs">
+      <div class="rpt-tab ac" onclick="rptTab('by-doc',this)"><span class="he">לפי רופא</span><span class="en">By Doctor</span></div>
+      <div class="rpt-tab" onclick="rptTab('all',this)"><span class="he">כל הרופאים</span><span class="en">All Doctors</span></div>
+      <div class="rpt-tab" onclick="rptTab('summary',this)"><span class="he">סיכום</span><span class="en">Summary</span></div>
+    </div>
+    <div class="rpt-month-sel" id="rpt-months"></div>
+    <div id="rpt-content"></div>
+    <button class="bpdf" onclick="exportReportPDF()" style="width:100%;justify-content:center;margin-top:4px">📄 <span class="he">ייצוא PDF</span><span class="en">Export PDF</span></button>
+  </div>
+
+  <!-- DATA (superadmin) -->
+  <div id="pg-data" class="page" style="display:none">
+    <div class="stitle"><span class="he">ניהול נתונים</span><span class="en">Data Management</span></div>
+    <div class="stitle" style="font-size:13px;margin-bottom:10px"><span class="he">רשימת משתמשים</span><span class="en">Users List</span></div>
+    <button class="badd" onclick="openAddDoc()">➕ <span class="he">הוספת משתמש</span><span class="en">Add User</span></button>
+    <div id="d-docs"></div>
+    <div class="sep"></div>
+    <div class="stitle" style="font-size:13px;margin-bottom:10px"><span class="he">גרפיקים שמורים</span><span class="en">Saved Schedules</span></div>
+    <div class="mpills" id="d-months"></div>
+    <div class="sep"></div>
+    <div class="stitle" style="font-size:13px;margin-bottom:10px"><span class="he">מניעות — חודש הבא</span><span class="en">Restrictions — Next Month</span></div>
+    <div id="d-wish"></div>
+  </div>
+
+  <div class="bnav">
+    <button class="nv active" id="nav-s" onclick="go('schedule',this)"><span class="ni">📅</span><span class="he">גרפיק</span><span class="en">Schedule</span></button>
+    <button class="nv" id="nav-w" onclick="go('wishes',this)"><span class="ni">🙅</span><span class="he">מניעות</span><span class="en">Wishes</span></button>
+    <button class="nv" id="nav-c" style="display:none" onclick="go('constr',this)"><span class="ni">🔧</span><span class="he">בנייה</span><span class="en">Builder</span></button>
+    <button class="nv" id="nav-r" style="display:none" onclick="go('reports',this)"><span class="ni">📊</span><span class="he">דוחות</span><span class="en">Reports</span></button>
+    <button class="nv" id="nav-d" style="display:none" onclick="go('data',this)"><span class="ni">⚙️</span><span class="he">ניהול</span><span class="en">Admin</span></button>
+  </div>
+</div>
+
+<!-- DOCTOR PICKER -->
+<div class="overlay" id="dm"><div class="msh">
+  <div class="mhdl"></div><div class="mtm" id="dm-ttl"></div>
+  <div id="dm-opts"></div>
+  <div class="mclr" onclick="clrCell()"><span class="he">🗑 נקה</span><span class="en">🗑 Clear</span></div>
+  <div class="mcanc" onclick="closeDM()"><span class="he">ביטול</span><span class="en">Cancel</span></div>
+</div></div>
+
+<!-- USER EDITOR -->
+<div class="overlay" id="de"><div class="msh">
+  <div class="mhdl"></div><div class="mtm" id="de-ttl"></div>
+  <div class="de-row">
+    <div><span class="dlabel"><span class="he">שם בעברית</span><span class="en">Name (HE)</span></span><input class="finp" id="de-he" placeholder="שם" type="text"></div>
+    <div><span class="dlabel"><span class="he">שם באנגלית</span><span class="en">Name (EN)</span></span><input class="finp" id="de-en" placeholder="Name" type="text" dir="ltr" style="text-align:left"></div>
+  </div>
+  <div class="de-row">
+    <div><span class="dlabel"><span class="he">שם משתמש</span><span class="en">Username</span></span><input class="finp" id="de-login" placeholder="login" type="text" dir="ltr" style="text-align:left"></div>
+    <div><span class="dlabel"><span class="he">סיסמה</span><span class="en">Password</span></span><input class="finp" id="de-pass" placeholder="pass" type="text" dir="ltr" style="text-align:left"></div>
+  </div>
+  <div style="margin-bottom:14px">
+    <span class="dlabel"><span class="he">תפקיד</span><span class="en">Role</span></span>
+    <select class="fsel" id="de-role">
+      <option value="doctor"><span class="he">רופא / דז'ורנט</span><span class="en">Doctor / Duty</span></option>
+      <option value="admin">Admin</option>
+      <option value="secretary"><span class="he">מזכירה</span><span class="en">Secretary</span></option>
+      <option value="staff"><span class="he">צוות</span><span class="en">Staff</span></option>
+    </select>
+  </div>
+  <div id="de-err" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none"></div>
+  <button class="bs" onclick="saveDocEdit()" style="margin-bottom:8px"><span class="he">שמירה</span><span class="en">Save</span></button>
+  <button class="bd" id="de-del" onclick="deleteDoc()" style="display:none"><span class="he">🗑 מחיקה</span><span class="en">🗑 Delete</span></button>
+  <div class="mcanc" onclick="closeDE()"><span class="he">ביטול</span><span class="en">Cancel</span></div>
+</div></div>
+
+<!-- LOGOUT -->
+<div class="overlay" id="lo"><div class="msh">
+  <div class="mhdl"></div><div class="mtm" id="lo-nm"></div>
+  <div class="ibox" style="margin-bottom:14px"><span class="ibox-i">🔑</span><div><div id="lo-role" style="font-size:12px;margin-bottom:2px"></div><div id="lo-login" style="font-size:11px;color:var(--t3)"></div></div></div>
+  <button class="bd" style="border-radius:var(--rs);padding:13px;margin-top:0" onclick="doLogout()"><span class="he">יציאה מהמערכת</span><span class="en">Sign Out</span></button>
+  <div class="mcanc" onclick="closeLO()"><span class="he">ביטול</span><span class="en">Cancel</span></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ STORAGE KEYS ═══
+const SK_DOCS='wf_docs_v2',SK_SCHED='wf_sched_v2',SK_WISH='wf_wish_v2',SK_VER='wf_ver_v2';
+
+// ═══ ROLES ═══
+// superadmin: все права + управление пользователями
+// admin: расписание + конструктор + пожелания за других
+// doctor: своё расписание + пожелания
+// secretary: просмотр всех месяцев + отчёты
+// staff: только текущий и предыдущий месяц
+
+const DEFAULT_DOCTORS=[
+  {id:0, he:'צח',      en:'Tzach',  login:'tzach',  pass:'1111',   role:'admin'},
+  {id:1, he:'סרגיי',   en:'Sergey', login:'sergey', pass:'456755', role:'superadmin'},
+  {id:2, he:'אלכסיי',  en:'Alexei', login:'alexei', pass:'2222',   role:'doctor'},
+  {id:3, he:'מולו',    en:'Mulo',   login:'mulo',   pass:'3333',   role:'doctor'},
+  {id:4, he:'יאסר',    en:'Yasser', login:'yasser', pass:'4444',   role:'doctor'},
+  {id:5, he:"ז'נדו",   en:'Jandu',  login:'jandu',  pass:'5555',   role:'doctor'},
+  {id:6, he:'איבגניי', en:'Evgeny', login:'evgeny', pass:'6666',   role:'doctor'},
+  {id:7, he:'מועמן',   en:'Moaman', login:'moaman', pass:'7777',   role:'doctor'},
+];
+
+function getDocs(){try{const d=JSON.parse(localStorage.getItem(SK_DOCS));return d&&d.length?d:DEFAULT_DOCTORS}catch{return DEFAULT_DOCTORS}}
+function setDocs(d){localStorage.setItem(SK_DOCS,JSON.stringify(d))}
+function getSched(){try{return JSON.parse(localStorage.getItem(SK_SCHED)||'{}')}catch{return{}}}
+function setSched(d){localStorage.setItem(SK_SCHED,JSON.stringify(d))}
+function getWish(){try{return JSON.parse(localStorage.getItem(SK_WISH)||'{}')}catch{return{}}}
+function setWish(d){localStorage.setItem(SK_WISH,JSON.stringify(d))}
+function mk(y,m){return y+'-'+String(m+1).padStart(2,'0')}
+
+const DCLS=['c0','c1','c2','c3','c4','c5','c6','c7','c8','c9'];
+const DBGC=['#3b82f6','#10b981','#f59e0b','#ef4444','#a855f7','#ec4899','#14b8a6','#f97316','#6366f1','#eab308'];
+function docCls(i){return DCLS[i%DCLS.length]}
+function docBg(i){return DBGC[i%DBGC.length]}
+
+const MHE=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+const MEN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DHE=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+const DEN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DNAME_EN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DNAME_HE=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+
+const today=new Date();
+let lang='he',cu=null;
+let vY=today.getFullYear(),vM=today.getMonth();
+let cY=today.getFullYear(),cM=today.getMonth();
+let cD={};
+let wY,wM,wTargetDocId=null; // whose wishes we're editing
+let wDraft=null;
+let mt=null,deEditId=null,nextDocId=100;
+let rptActiveTab='by-doc',rptY=today.getFullYear(),rptM=today.getMonth();
+
+function t(h,e){return lang==='he'?h:e}
+function dn(d){return lang==='he'?d.he:d.en}
+function isAdmin(){return cu&&(cu.role==='admin'||cu.role==='superadmin')}
+function isSuperA(){return cu&&cu.role==='superadmin'}
+function isSecretary(){return cu&&cu.role==='secretary'}
+function isStaff(){return cu&&cu.role==='staff'}
+function canSeeMonth(y,m){
+  // staff: only current and previous month
+  if(isStaff()){
+    const cur=new Date(today.getFullYear(),today.getMonth(),1);
+    const prev=new Date(today.getFullYear(),today.getMonth()-1,1);
+    const req=new Date(y,m,1);
+    return req>=prev&&req<=cur;
+  }
+  return true;
+}
+
+function toggleLang(){
+  lang=lang==='he'?'en':'he';
+  document.body.setAttribute('data-lang',lang);
+  document.documentElement.lang=lang==='en'?'en':'he';
+  document.documentElement.dir=lang==='he'?'rtl':'ltr';
+  if(cu)renderAll();
+}
+
+// ═══ LOGIN ═══
+function doLogin(){
+  const u=document.getElementById('li-u').value.trim().toLowerCase();
+  const p=document.getElementById('li-p').value.trim();
+  const docs=getDocs();
+  let found=null;
+  for(const d of docs){if(d.login.toLowerCase()===u&&d.pass===p){found=d;break}}
+  if(!found){
+    document.getElementById('li-err').style.display='block';
+    document.getElementById('li-u').classList.add('err');
+    document.getElementById('li-p').classList.add('err');
+    return;
+  }
+  document.getElementById('li-err').style.display='none';
+  document.getElementById('li-u').classList.remove('err');
+  document.getElementById('li-p').classList.remove('err');
+  cu=found;
+  cu._idx=docs.findIndex(d=>d.id===cu.id);
+  const nm=today.getMonth()+1;
+  wM=nm%12; wY=nm>11?today.getFullYear()+1:today.getFullYear();
+  wTargetDocId=cu.id; // default: editing own wishes
+  const sv=getSched()[mk(cY,cM)];
+  cD=sv?{...sv}:{};
+  document.getElementById('pg-login').style.display='none';
+  document.getElementById('app').style.display='block';
+  initApp(); renderAll();
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!cu)doLogin()});
+
+function initApp(){
+  refreshTopbar();
+  const nav_w=document.getElementById('nav-w');
+  const nav_c=document.getElementById('nav-c');
+  const nav_r=document.getElementById('nav-r');
+  const nav_d=document.getElementById('nav-d');
+  // staff & secretary: no wishes nav
+  nav_w.style.display=(cu.role==='staff'||cu.role==='secretary')?'none':'flex';
+  nav_c.style.display=isAdmin()?'flex':'none';
+  nav_r.style.display=isSecretary()||isSuperA()?'flex':'none';
+  nav_d.style.display=isSuperA()?'flex':'none';
+  if(isAdmin()) document.getElementById('pg-constr').style.display='';
+  if(isSecretary()||isSuperA()) document.getElementById('pg-reports').style.display='';
+  if(isSuperA()) document.getElementById('pg-data').style.display='';
+}
+
+function refreshTopbar(){
+  const n=dn(cu);
+  document.getElementById('t-nm').textContent=n;
+  const av=document.getElementById('t-av');
+  av.textContent=n[0];
+  av.style.background=docBg(cu._idx>=0?cu._idx:0);
+}
+
+// ═══ NAV ═══
+function go(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nv').forEach(n=>n.classList.remove('active'));
+  document.getElementById('pg-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(name==='wishes'){wDraft=null;renderWishes(true);}
+  else if(name==='reports'){renderReports();}
+  else renderAll();
+}
+
+function renderAll(){
+  if(!cu)return;
+  cu._idx=getDocs().findIndex(d=>d.id===cu.id);
+  refreshTopbar();
+  renderSched();
+  if(cu.role!=='staff'&&cu.role!=='secretary') renderWishes(false);
+  if(isAdmin()) renderCons();
+  if(isSecretary()||isSuperA()) renderReports();
+  if(isSuperA()) renderData();
+}
+
+// ═══ SCHEDULE VIEW ═══
+function vMv(d){
+  const ny=vY,nm=vM+d;
+  let ny2=ny,nm2=nm;
+  if(nm2>11){nm2=0;ny2++}if(nm2<0){nm2=11;ny2--}
+  if(!canSeeMonth(ny2,nm2)){showToast(t('אין גישה לחודש זה','No access to this month'),'err');return;}
+  vY=ny2;vM=nm2;renderSched();
+}
+
+function renderSched(){
+  const key=mk(vY,vM);
+  const sc=getSched()[key]||{};
+  document.getElementById('v-ttl').textContent=t(MHE[vM],MEN[vM])+' '+vY;
+  document.getElementById('v-grid').innerHTML=buildGrid(vY,vM,sc,false);
+  renderLeg(); renderStats(sc);
+}
+
+function buildGrid(y,m,data,ed){
+  const docs=getDocs();
+  const dh=(lang==='he'?DHE:DEN).map((d,i)=>`<div class="dhdr${i===5?' fh':''}">${d}</div>`).join('');
+  const first=new Date(y,m,1).getDay();
+  const days=new Date(y,m+1,0).getDate();
+  const cls=ed?'cc':'dc';
+  let cells='';
+  for(let i=0;i<first;i++)cells+=`<div class="${cls} em"></div>`;
+  for(let d=1;d<=days;d++){
+    const dow=new Date(y,m,d).getDay();
+    const isFri=dow===5;
+    const isT=!ed&&y===today.getFullYear()&&m===today.getMonth()&&d===today.getDate();
+    const dk=y+'-'+m+'-'+d;
+    let c=cls;
+    if(isFri)c+=' fr';if(isT)c+=' mt';
+    if(isFri){
+      const id1=data[dk+'_1'],id2=data[dk+'_2'];
+      const s1=chipH(docs,id1,t('עד 13:00','Until 13:00'),ed,`openDM('${dk}','1')`);
+      const s2=chipH(docs,id2,t('אחרי 13:00','After 13:00'),ed,`openDM('${dk}','2')`);
+      cells+=`<div class="${c}"><div class="dn">${d}</div>${s1}${s2}${ed?'<div class="ap">+</div>':''}</div>`;
+    } else {
+      const id=data[dk];
+      const sh=chipH(docs,id,null,false,'');
+      const oc=ed?`onclick="openDM('${dk}','day')"`:'';
+      cells+=`<div class="${c}" ${oc}><div class="dn">${d}</div>${sh}${ed?'<div class="ap">+</div>':''}</div>`;
+    }
+  }
+  return dh+cells;
+}
+
+function chipH(docs,docId,label,ed,onClick){
+  let o='';
+  if(label)o+=`<span class="slbl">${label}</span>`;
+  if(docId!==undefined&&docId!==null){
+    const doc=docs.find(d=>d.id===docId);
+    const idx=docs.findIndex(d=>d.id===docId);
+    if(doc){
+      const oa=ed&&label?`onclick="${onClick}" style="cursor:pointer"`:'';
+      o+=`<span class="chip ${docCls(idx)}" ${oa}>${dn(doc)}</span>`;
+    }else o+=`<span class="chip ech">${t('—','—')}</span>`;
+  }else{
+    const oa=ed&&label?`onclick="${onClick}" style="cursor:pointer"`:'';
+    o+=`<span class="chip ech" ${oa}>${t('—','—')}</span>`;
+  }
+  return o;
+}
+
+function renderLeg(){
+  const docs=getDocs();
+  document.getElementById('v-leg').innerHTML=docs.map((d,i)=>
+    `<div class="li"><div class="ldot chip ${docCls(i)}"></div><div style="font-size:12px;font-weight:600">${dn(d)}</div></div>`
+  ).join('');
+}
+
+function renderStats(sc){
+  const docs=getDocs();
+  const cnt={};docs.forEach(d=>cnt[d.id]=0);
+  Object.entries(sc).forEach(([k,v])=>{if(v!==undefined&&v!==null&&cnt[v]!==undefined)cnt[v]++});
+  const tot=Object.values(cnt).reduce((a,b)=>a+b,0);
+  const days=new Date(vY,vM+1,0).getDate();
+  document.getElementById('v-stats').innerHTML=
+    `<div class="s3g">
+      <div class="sc"><div class="sv">${days}</div><div class="sl">${t('ימים','Days')}</div></div>
+      <div class="sc"><div class="sv">${tot}</div><div class="sl">${t('תורנויות','Shifts')}</div></div>
+      <div class="sc"><div class="sv">${docs.length}</div><div class="sl">${t('רופאים','Doctors')}</div></div>
+    </div>
+    <div class="dsg2">${docs.map((d,i)=>`<div class="dsg">
+      <span class="chip ${docCls(i)}" style="font-size:11px;padding:3px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px">${dn(d)}</span>
+      <span style="font-size:17px;font-weight:900;color:var(--t2)">${cnt[d.id]||0}</span>
+    </div>`).join('')}</div>`;
+}
+
+// ═══ WISHES ═══
+function renderWishDocSel(){
+  const docs=getDocs().filter(d=>d.role==='doctor'||d.role==='admin');
+  if(!isAdmin()){document.getElementById('w-doc-sel').style.display='none';return;}
+  document.getElementById('w-doc-sel').style.display='block';
+  document.getElementById('w-doc-pills').innerHTML=docs.map((d,i)=>{
+    const idx=getDocs().findIndex(x=>x.id===d.id);
+    const active=wTargetDocId===d.id?'active':'';
+    return`<div class="wdoc-pill ${active} ${docCls(idx)}" style="border-color:${wTargetDocId===d.id?docBg(idx):'transparent'}" onclick="selectWishDoc(${d.id})">${dn(d)}</div>`;
+  }).join('');
+}
+
+function selectWishDoc(id){
+  wTargetDocId=id;
+  wDraft=null; // reset draft so it reloads for new target
+  renderWishes(true);
+}
+
+function renderWishes(reload){
+  if(!cu||cu.role==='staff'||cu.role==='secretary')return;
+  // ensure wTargetDocId is valid
+  if(!wTargetDocId) wTargetDocId=cu.id;
+  // non-admin can only see own wishes
+  if(!isAdmin()) wTargetDocId=cu.id;
+
+  renderWishDocSel();
+
+  document.getElementById('w-ttl').textContent=t(MHE[wM],MEN[wM])+' '+wY;
+
+  const allW=getWish();
+  const uk=mk(wY,wM)+'_'+wTargetDocId;
+  if(reload||wDraft===null) wDraft=new Set(allW[uk]||[]);
+
+  const si=document.getElementById('w-saved-info');
+  if(allW[uk]&&allW[uk].length>0){
+    const docs=getDocs();
+    const doc=docs.find(d=>d.id===wTargetDocId);
+    const who=isAdmin()&&doc&&doc.id!==cu.id?dn(doc)+': ':'';
+    si.style.display='block';
+    si.textContent=who+t('מניעות נשמרו בעבר לחודש זה','Restrictions previously saved for this month');
+  }else{si.style.display='none';}
+
+  const dh=(lang==='he'?DHE:DEN).map((d,i)=>`<div class="dhdr${i===5?' fh':''}">${d}</div>`).join('');
+  const first=new Date(wY,wM,1).getDay();
+  const days=new Date(wY,wM+1,0).getDate();
+  let cells='';
+  for(let i=0;i<first;i++)cells+=`<div class="wc em"></div>`;
+  for(let d=1;d<=days;d++){
+    const dow=new Date(wY,wM,d).getDay();
+    const isFri=dow===5;
+    const isOff=wDraft.has(d);
+    let c='wc';if(isFri)c+=' fr';if(isOff)c+=' off';
+    cells+=`<div class="${c}" onclick="togW(${d})"><div class="dn">${d}</div>${isOff?'<div class="wbdg">✕</div>':''}</div>`;
+  }
+  document.getElementById('w-grid').innerHTML=dh+cells;
+}
+
+function togW(d){if(wDraft.has(d))wDraft.delete(d);else wDraft.add(d);renderWishes(false);}
+
+function saveWishes(){
+  const allW=getWish();
+  allW[mk(wY,wM)+'_'+wTargetDocId]=Array.from(wDraft);
+  setWish(allW);
+  const docs=getDocs();
+  const doc=docs.find(d=>d.id===wTargetDocId);
+  const who=isAdmin()&&doc&&doc.id!==cu.id?' ('+dn(doc)+')':'';
+  showToast(t('מניעות נשמרו ✓','Saved ✓')+who);
+  renderWishes(true);
+}
+
+// ═══ CONSTRUCTOR ═══
+function buildCPills(){
+  let h='';
+  for(let off=-1;off<=3;off++){
+    let pm=today.getMonth()+off,py=today.getFullYear();
+    while(pm<0){pm+=12;py--}while(pm>11){pm-=12;py++}
+    const ac=(py===cY&&pm===cM)?'ac':'';
+    h+=`<div class="cpill ${ac}" onclick="selCM(${py},${pm})">${t(MHE[pm],MEN[pm])} ${py}</div>`;
+  }
+  document.getElementById('c-pills').innerHTML=h;
+}
+function selCM(y,m){cY=y;cM=m;const sv=getSched()[mk(y,m)];cD=sv?{...sv}:{};renderCons();}
+function renderCons(){
+  buildCPills();
+  document.getElementById('c-ttl').textContent=t(MHE[cM],MEN[cM])+' '+cY;
+  const docs=getDocs();
+  const cnt={};docs.forEach(d=>cnt[d.id]=0);
+  Object.values(cD).forEach(v=>{if(v!==undefined&&v!==null&&cnt[v]!==undefined)cnt[v]++});
+  document.getElementById('c-ctrs').innerHTML=docs.map((d,i)=>
+    `<div class="ctc ${docCls(i)}"><span>${dn(d)}</span><span class="ctn">${cnt[d.id]||0}</span></div>`
+  ).join('');
+  document.getElementById('c-grid').innerHTML=buildGrid(cY,cM,cD,true);
+}
+function saveCons(){const key=mk(cY,cM),all=getSched();all[key]={...cD};setSched(all);showToast(t('גרפיק פורסם ✓','Published ✓'));renderAll();}
+function clearCons(){if(!confirm(t('לנקות את הטיוטה?','Clear draft?')))return;cD={};renderCons();}
+
+// ═══ DOCTOR PICKER MODAL ═══
+function openDM(dk,type){
+  mt={dk,type};
+  const pts=dk.split('-'),y=+pts[0],m=+pts[1],d=+pts[2];
+  let ttl=d+' '+t(MHE[m],MEN[m]);
+  if(type==='1')ttl+=' — '+t('עד 13:00','Until 13:00');
+  if(type==='2')ttl+=' — '+t('אחרי 13:00','After 13:00');
+  document.getElementById('dm-ttl').textContent=ttl;
+  const allW=getWish(),wk=mk(y,m),unav=new Set();
+  const docs=getDocs();
+  docs.forEach(doc=>{if((allW[wk+'_'+doc.id]||[]).includes(d))unav.add(doc.id)});
+  const sk=type==='1'?dk+'_1':type==='2'?dk+'_2':dk;
+  const sel=cD[sk];
+  document.getElementById('dm-opts').innerHTML=docs.map((doc,i)=>{
+    const isU=unav.has(doc.id),isS=sel===doc.id;
+    return`<div class="dopt ${isS?'sel':''} ${isU?'unav':''}" ${isU?'':' onclick="pickD('+doc.id+')"'}>
+      <div class="dodot" style="background:${docBg(i)}22;color:${docBg(i)}">${dn(doc)[0]}</div>
+      <div><div class="don">${dn(doc)}</div>${isU?`<div class="dos">${t('מניעה','Unavailable')}</div>`:''}</div>
+      ${isS?`<span style="margin-${lang==='he'?'right':'left'}:auto;color:var(--acc2);font-size:18px">✓</span>`:''}
+    </div>`;
+  }).join('');
+  document.getElementById('dm').classList.add('open');
+}
+function pickD(id){if(!mt)return;const k=mt.type==='1'?mt.dk+'_1':mt.type==='2'?mt.dk+'_2':mt.dk;cD[k]=id;closeDM();renderCons();}
+function clrCell(){if(!mt)return;const k=mt.type==='1'?mt.dk+'_1':mt.type==='2'?mt.dk+'_2':mt.dk;delete cD[k];closeDM();renderCons();}
+function closeDM(){document.getElementById('dm').classList.remove('open')}
+
+// ═══ REPORTS ═══
+function rptTab(tab,btn){
+  rptActiveTab=tab;
+  document.querySelectorAll('.rpt-tab').forEach(t=>t.classList.remove('ac'));
+  btn.classList.add('ac');
+  renderReportContent();
+}
+
+function renderReports(){
+  // month pills from saved schedules
+  const all=getSched(),ks=Object.keys(all).sort();
+  let h='';
+  ks.forEach(k=>{
+    const[yr,mo]=k.split('-'),mi=+mo-1;
+    const ac=(+yr===rptY&&mi===rptM)?'ac':'';
+    h+=`<div class="rms ${ac}" onclick="selRptMonth(${yr},${mi})">${t(MHE[mi],MEN[mi])} ${yr}</div>`;
+  });
+  document.getElementById('rpt-months').innerHTML=h||`<span style="color:var(--t3);font-size:12px">${t('אין גרפיקים','No schedules')}</span>`;
+  renderReportContent();
+}
+
+function selRptMonth(y,m){rptY=+y;rptM=+m;renderReports();}
+
+function renderReportContent(){
+  const sc=getSched()[mk(rptY,rptM)]||{};
+  const docs=getDocs();
+  const monthName=t(MHE[rptM],MEN[rptM])+' '+rptY;
+
+  if(rptActiveTab==='by-doc'){
+    renderRptByDoc(sc,docs,monthName);
+  } else if(rptActiveTab==='all'){
+    renderRptAll(sc,docs,monthName);
+  } else {
+    renderRptSummary(sc,docs,monthName);
+  }
+}
+
+function getShiftsForDoc(sc,docId,y,m){
+  const days=new Date(y,m+1,0).getDate();
+  const shifts=[];
+  for(let d=1;d<=days;d++){
+    const dow=new Date(y,m,d).getDay();
+    const dk=y+'-'+m+'-'+d;
+    const dayName=t(DNAME_HE[dow],DNAME_EN[dow]);
+    if(dow===5){
+      if(sc[dk+'_1']===docId) shifts.push({d,type:'fri1',dow,dayName,label:t('עד 13:00','<13:00')});
+      if(sc[dk+'_2']===docId) shifts.push({d,type:'fri2',dow,dayName,label:t('אחרי 13:00','>13:00')});
+    } else {
+      if(sc[dk]===docId) shifts.push({d,type:'regular',dow,dayName,label:''});
+    }
+  }
+  return shifts;
+}
+
+function fmtDate(d,m,y){
+  return lang==='he'?`${d}/${m+1}/${y}`:`${String(d).padStart(2,'0')}/${String(m+1).padStart(2,'0')}/${y}`;
+}
+
+function renderRptByDoc(sc,docs,monthName){
+  // doc selector
+  let h=`<div style="margin-bottom:12px">
+    <div class="stitle" style="font-size:12px;margin-bottom:8px">${t('בחר רופא','Select Doctor')}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">`;
+  docs.forEach((d,i)=>{
+    const active=window._rptDocId===d.id?`border:2px solid ${docBg(i)}`:'border:1px solid var(--brd)';
+    h+=`<div class="wdoc-pill ${docCls(i)}" style="${active}" onclick="selRptDoc(${d.id})">${dn(d)}</div>`;
+  });
+  h+='</div></div>';
+
+  const docId=window._rptDocId!==undefined?window._rptDocId:docs[0]?.id;
+  if(!window._rptDocId) window._rptDocId=docId;
+
+  const shifts=getShiftsForDoc(sc,docId,rptY,rptM);
+  const doc=docs.find(d=>d.id===docId);
+  const idx=docs.findIndex(d=>d.id===docId);
+
+  h+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    <div class="dav" style="width:36px;height:36px;font-size:13px;background:${docBg(idx)}22;color:${docBg(idx)}">${doc?dn(doc)[0]:''}</div>
+    <div>
+      <div style="font-size:15px;font-weight:800">${doc?dn(doc):''}</div>
+      <div style="font-size:12px;color:var(--t3)">${monthName} · ${shifts.length} ${t('תורנויות','shifts')}</div>
+    </div>
+  </div>`;
+
+  if(shifts.length){
+    h+=`<table class="rtable"><thead><tr>
+      <th>#</th>
+      <th>${t('תאריך','Date')}</th>
+      <th>${t('יום','Day')}</th>
+      <th>${t('משמרת','Shift')}</th>
+    </tr></thead><tbody>`;
+    shifts.forEach((s,i)=>{
+      const isFri=s.dow===5;
+      h+=`<tr>
+        <td class="num">${i+1}</td>
+        <td class="date-cell">${fmtDate(s.d,rptM,rptY)}</td>
+        <td class="${isFri?'fri-cell':''}">${s.dayName}</td>
+        <td>${isFri?`<span style="font-size:10px;background:rgba(109,40,217,.15);color:var(--pur2);padding:2px 7px;border-radius:5px;font-weight:600">${s.label}</span>`:'—'}</td>
+      </tr>`;
+    });
+    h+='</tbody></table>';
+  } else {
+    h+=`<div style="color:var(--t3);font-size:13px;padding:16px 0;text-align:center">${t('אין תורנויות בחודש זה','No shifts this month')}</div>`;
+  }
+  document.getElementById('rpt-content').innerHTML=h;
+}
+
+function selRptDoc(id){window._rptDocId=id;renderReportContent();}
+
+function renderRptAll(sc,docs,monthName){
+  let h=`<div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--t2)">${monthName}</div>`;
+  h+=`<table class="rtable"><thead><tr>
+    <th>${t('רופא','Doctor')}</th>
+    <th>${t('דז\'ורנות 1','Shift 1')}</th>
+    <th>${t('דז\'ורנות 2','Shift 2')}</th>
+    <th>${t('סה"כ','Total')}</th>
+  </tr></thead><tbody>`;
+
+  docs.forEach((d,i)=>{
+    const shifts=getShiftsForDoc(sc,d.id,rptY,rptM);
+    const s1=shifts[0],s2=shifts[1];
+    const isFri1=s1&&s1.dow===5,isFri2=s2&&s2.dow===5;
+    h+=`<tr>
+      <td><div style="display:flex;align-items:center;gap:7px">
+        <div class="dav" style="width:28px;height:28px;font-size:11px;background:${docBg(i)}22;color:${docBg(i)};flex-shrink:0">${dn(d)[0]}</div>
+        <span style="font-weight:600;font-size:12px">${dn(d)}</span>
+      </div></td>
+      <td class="date-cell">${s1?`<span class="${isFri1?'fri-cell':''}">${fmtDate(s1.d,rptM,rptY)}</span><br><span style="font-size:10px;color:var(--t3)">${s1.dayName}${isFri1?' '+s1.label:''}</span>`:'-'}</td>
+      <td class="date-cell">${s2?`<span class="${isFri2?'fri-cell':''}">${fmtDate(s2.d,rptM,rptY)}</span><br><span style="font-size:10px;color:var(--t3)">${s2.dayName}${isFri2?' '+s2.label:''}</span>`:'-'}</td>
+      <td class="num">${shifts.length}</td>
+    </tr>`;
+  });
+  h+='</tbody></table>';
+  document.getElementById('rpt-content').innerHTML=h;
+}
+
+function renderRptSummary(sc,docs,monthName){
+  const cnt={};docs.forEach(d=>cnt[d.id]=0);
+  Object.entries(sc).forEach(([k,v])=>{if(v!==undefined&&v!==null&&cnt[v]!==undefined)cnt[v]++});
+  const total=Object.values(cnt).reduce((a,b)=>a+b,0);
+  const days=new Date(rptY,rptM+1,0).getDate();
+
+  let h=`<div class="s3g">
+    <div class="sc"><div class="sv">${days}</div><div class="sl">${t('ימים','Days')}</div></div>
+    <div class="sc"><div class="sv">${total}</div><div class="sl">${t('תורנויות','Shifts')}</div></div>
+    <div class="sc"><div class="sv">${docs.length}</div><div class="sl">${t('רופאים','Doctors')}</div></div>
+  </div>
+  <table class="rtable"><thead><tr>
+    <th>${t('רופא','Doctor')}</th>
+    <th>${t('תורנויות','Shifts')}</th>
+    <th>${t('אחוז','%')}</th>
+    <th>${t('ימים ראשון','1st Shift')}</th>
+    <th>${t('ימים שישי','Fri Shifts')}</th>
+  </tr></thead><tbody>`;
+
+  const sorted=[...docs].sort((a,b)=>(cnt[b.id]||0)-(cnt[a.id]||0));
+  sorted.forEach((d,i)=>{
+    const shifts=getShiftsForDoc(sc,d.id,rptY,rptM);
+    const friCnt=shifts.filter(s=>s.dow===5).length;
+    const regCnt=shifts.length-friCnt;
+    const pct=total>0?Math.round((shifts.length/total)*100):0;
+    const idx=docs.findIndex(x=>x.id===d.id);
+    h+=`<tr>
+      <td><div style="display:flex;align-items:center;gap:7px">
+        <div class="dav" style="width:28px;height:28px;font-size:11px;background:${docBg(idx)}22;color:${docBg(idx)};flex-shrink:0">${dn(d)[0]}</div>
+        <span style="font-weight:600;font-size:12px">${dn(d)}</span>
+      </div></td>
+      <td class="num">${shifts.length}</td>
+      <td>${pct}%</td>
+      <td>${regCnt}</td>
+      <td>${friCnt?`<span style="color:var(--pur2);font-weight:700">${friCnt}</span>`:0}</td>
+    </tr>`;
+  });
+  h+='</tbody></table>';
+  document.getElementById('rpt-content').innerHTML=h;
+}
+
+function exportReportPDF(){
+  if(!window.jspdf){showToast('jsPDF not loaded','err');return}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const sc=getSched()[mk(rptY,rptM)]||{};
+  const docs=getDocs();
+  const mn=MEN[rptM]+' '+rptY;
+
+  doc.setFont('helvetica','bold');doc.setFontSize(14);
+  doc.text('Wolfson Cardiac — Report: '+mn,14,14);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(130,130,130);
+  doc.text('Generated: '+new Date().toLocaleDateString('en-GB'),14,20);
+  doc.setTextColor(0,0,0);
+
+  let y=28;
+  docs.forEach((d,i)=>{
+    const shifts=getShiftsForDoc(sc,d.id,rptY,rptM);
+    if(!shifts.length)return;
+    doc.setFont('helvetica','bold');doc.setFontSize(10);
+    doc.text(d.en+' ('+d.he+')',14,y);
+    doc.setFont('helvetica','normal');doc.setFontSize(8);
+    y+=5;
+    shifts.forEach((s,si)=>{
+      const dow=DNAME_EN[s.dow];
+      const dt=String(s.d).padStart(2,'0')+'/'+String(rptM+1).padStart(2,'0')+'/'+rptY;
+      const shift=s.dow===5?' ['+s.label+']':'';
+      doc.text((si+1)+'. '+dt+' — '+dow+shift,20,y);
+      y+=5;
+      if(y>270){doc.addPage();y=20;}
+    });
+    y+=3;
+    if(y>270){doc.addPage();y=20;}
+  });
+  doc.save('Report_Wolfson_'+MEN[rptM]+'_'+rptY+'.pdf');
+  showToast(t('PDF הורד ✓','PDF downloaded ✓'));
+}
+
+// ═══ DATA PAGE ═══
+function renderData(){
+  const docs=getDocs();
+  nextDocId=Math.max(nextDocId,...docs.map(d=>d.id+1));
+  const roleLabel=(r)=>{
+    if(r==='superadmin')return`<span class="badge sup">${t('סופר-אדמין','Superadmin')}</span>`;
+    if(r==='admin')return`<span class="badge adm">Admin</span>`;
+    if(r==='secretary')return`<span class="badge sec">${t('מזכירה','Secretary')}</span>`;
+    if(r==='staff')return`<span class="badge stf">${t('צוות','Staff')}</span>`;
+    return`<span class="badge">${t('רופא','Doctor')}</span>`;
+  };
+  document.getElementById('d-docs').innerHTML=docs.map((d,i)=>
+    `<div class="dcard">
+      <div class="dav" style="background:${docBg(i)}22;color:${docBg(i)}">${dn(d)[0]}</div>
+      <div class="din">
+        <div class="dn2">${dn(d)}</div>
+        <div class="dr">${roleLabel(d.role)}&nbsp;·&nbsp;<span style="font-family:monospace;font-size:11px;color:var(--t3)">${d.login}</span></div>
+      </div>
+      ${d.role!=='superadmin'?`<button class="bsm pri" onclick="openEditDoc(${d.id})">${t('עריכה','Edit')}</button>`:''}
+    </div>`
+  ).join('');
+
+  const all=getSched(),ks=Object.keys(all).sort();
+  document.getElementById('d-months').innerHTML=ks.length
+    ?ks.map(k=>{const[yr,mo]=k.split('-'),mi=+mo-1;return`<div class="mpill" onclick="jumpM(${yr},${mi})">${t(MHE[mi],MEN[mi])} ${yr}</div>`}).join('')
+    :`<span style="color:var(--t3);font-size:13px">${t('אין גרפיקים','No schedules')}</span>`;
+
+  // wishes summary
+  const allW=getWish(),wk=mk(wY,wM);
+  document.getElementById('d-wish').innerHTML=docs.map((d,i)=>{
+    const days=(allW[wk+'_'+d.id]||[]).sort((a,b)=>a-b);
+    return`<div class="wscard">
+      <div class="wsrow">
+        <div class="dav" style="width:30px;height:30px;font-size:12px;background:${docBg(i)}22;color:${docBg(i)}">${dn(d)[0]}</div>
+        <div style="font-size:13px;font-weight:700">${dn(d)}</div>
+      </div>
+      <div class="wspills">${days.length?days.map(x=>`<span class="wsp">${x}</span>`).join(''):`<span class="wsp-none">${t('ללא מניעות','No restrictions')}</span>`}</div>
+    </div>`;
+  }).join('');
+}
+
+function jumpM(y,m){vY=+y;vM=+m;go('schedule',document.getElementById('nav-s'));}
+
+function openAddDoc(){
+  deEditId=null;
+  document.getElementById('de-ttl').textContent=t('הוספת משתמש','Add User');
+  ['de-he','de-en','de-login','de-pass'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('de-role').value='doctor';
+  document.getElementById('de-del').style.display='none';
+  document.getElementById('de-err').style.display='none';
+  document.getElementById('de').classList.add('open');
+}
+
+function openEditDoc(id){
+  const docs=getDocs(),doc=docs.find(d=>d.id===id);
+  if(!doc)return;
+  deEditId=id;
+  document.getElementById('de-ttl').textContent=t('עריכת משתמש','Edit User')+': '+dn(doc);
+  document.getElementById('de-he').value=doc.he;
+  document.getElementById('de-en').value=doc.en;
+  document.getElementById('de-login').value=doc.login;
+  document.getElementById('de-pass').value=doc.pass;
+  document.getElementById('de-role').value=doc.role==='superadmin'?'admin':doc.role;
+  document.getElementById('de-del').style.display='block';
+  document.getElementById('de-err').style.display='none';
+  document.getElementById('de').classList.add('open');
+}
+
+function saveDocEdit(){
+  const he=document.getElementById('de-he').value.trim();
+  const en=document.getElementById('de-en').value.trim();
+  const login=document.getElementById('de-login').value.trim().toLowerCase();
+  const pass=document.getElementById('de-pass').value.trim();
+  const role=document.getElementById('de-role').value;
+  const errEl=document.getElementById('de-err');
+  if(!he||!en||!login||!pass){errEl.textContent=t('יש למלא את כל השדות','All fields required');errEl.style.display='block';return;}
+  if(!/^[a-z0-9_]+$/i.test(login)){errEl.textContent=t('שם משתמש — לטינית בלבד (a-z, 0-9, _)','Username: Latin letters only');errEl.style.display='block';return;}
+  const docs=getDocs();
+  if(docs.find(d=>d.login.toLowerCase()===login&&d.id!==deEditId)){errEl.textContent=t('שם משתמש תפוס','Username taken');errEl.style.display='block';return;}
+  if(deEditId===null){
+    docs.push({id:nextDocId++,he,en,login,pass,role});
+  }else{
+    const idx=docs.findIndex(d=>d.id===deEditId);
+    if(idx>=0){docs[idx]={...docs[idx],he,en,login,pass,role};if(cu.id===deEditId){cu={...docs[idx]};cu._idx=idx;}}
+  }
+  setDocs(docs);closeDE();
+  showToast(deEditId===null?t('נוסף ✓','Added ✓'):t('נשמר ✓','Saved ✓'));
+  renderData();renderAll();
+}
+
+function deleteDoc(){
+  const docs=getDocs(),doc=docs.find(d=>d.id===deEditId);
+  if(!doc)return;
+  if(doc.role==='superadmin'){showToast(t('לא ניתן למחוק סופר-אדמין','Cannot delete superadmin'),'err');return;}
+  if(!confirm(t('למחוק את '+dn(doc)+'?','Delete '+dn(doc)+'?')))return;
+  setDocs(docs.filter(d=>d.id!==deEditId));closeDE();
+  showToast(t('נמחק ✓','Deleted ✓'));renderData();
+}
+function closeDE(){document.getElementById('de').classList.remove('open')}
+
+// ═══ LOGOUT ═══
+function openLO(){
+  document.getElementById('lo-nm').textContent=dn(cu);
+  document.getElementById('lo-role').textContent=
+    cu.role==='superadmin'?t('סופר-אדמין','Superadmin'):
+    cu.role==='admin'?'Admin':
+    cu.role==='secretary'?t('מזכירה','Secretary'):
+    cu.role==='staff'?t('צוות','Staff'):t('רופא','Doctor');
+  document.getElementById('lo-login').textContent='@'+cu.login;
+  document.getElementById('lo').classList.add('open');
+}
+function closeLO(){document.getElementById('lo').classList.remove('open')}
+function doLogout(){
+  cu=null;closeLO();wDraft=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('pg-login').style.display='flex';
+  document.getElementById('li-p').value='';document.getElementById('li-u').value='';
+  document.getElementById('li-err').style.display='none';
+  document.querySelectorAll('.nv').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nav-s').classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pg-schedule').classList.add('active');
+}
+
+['dm','de','lo'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){
+    if(e.target===this){if(id==='dm')closeDM();if(id==='de')closeDE();if(id==='lo')closeLO();}
+  });
+});
+
+// ═══ PDF EXPORT (schedule) ═══
+function exportPDF(){
+  if(!window.jspdf){showToast('jsPDF not loaded','err');return}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const sc=getSched()[mk(vY,vM)]||{};
+  const docs=getDocs();
+  const mn=MEN[vM];
+  doc.setFont('helvetica','bold');doc.setFontSize(15);
+  doc.text('Wolfson Cardiac Surgery — '+mn+' '+vY,14,13);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(120,120,120);
+  doc.text('Generated: '+new Date().toLocaleDateString('en-GB'),14,19);doc.setTextColor(0,0,0);
+  const cW=36,rH=11,sX=14,sY=24;
+  const hdrs=['Sun','Mon','Tue','Wed','Thu','Fri<13','Fri>13','Sat'];
+  hdrs.forEach((h,i)=>{
+    const col=i===5||i===6?[235,228,255]:[240,245,255];
+    doc.setFillColor(...col);doc.rect(sX+i*cW,sY,cW,rH,'F');
+    doc.setDrawColor(180,180,180);doc.rect(sX+i*cW,sY,cW,rH,'S');
+    doc.setFont('helvetica','bold');doc.setFontSize(8);
+    doc.text(h,sX+i*cW+cW/2,sY+7,{align:'center'});
+  });
+  const dNames=docs.reduce((acc,d)=>{acc[d.id]=d.en;return acc},{});
+  const first=new Date(vY,vM,1).getDay();
+  const daysInM=new Date(vY,vM+1,0).getDate();
+  let week=Array(8).fill(null),wn=0;
+  for(let i=0;i<first;i++)week[i]=null;
+  for(let d=1;d<=daysInM;d++){
+    const dow=new Date(vY,vM,d).getDay(),dk=vY+'-'+vM+'-'+d;
+    if(dow===5){
+      const i1=sc[dk+'_1'],i2=sc[dk+'_2'];
+      week[5]={d,l:i1!==undefined?dNames[i1]||'?':'-'};
+      week[6]={d,l:i2!==undefined?dNames[i2]||'?':'-'};
+    }else{const ci=dow===6?7:dow;week[ci]={d,l:sc[dk]!==undefined?dNames[sc[dk]]||'?':'-'};}
+    if(dow===6||d===daysInM){
+      const ry=sY+rH+(wn*rH);
+      week.forEach((cell,i)=>{
+        const col=i===5||i===6?[248,244,255]:[255,255,255];
+        doc.setFillColor(...col);doc.rect(sX+i*cW,ry,cW,rH,'F');
+        doc.setDrawColor(200,200,200);doc.rect(sX+i*cW,ry,cW,rH,'S');
+        if(cell){
+          doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(130,130,130);
+          doc.text(String(cell.d),sX+i*cW+1.5,ry+3.5);
+          doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(20,20,20);
+          doc.text(cell.l,sX+i*cW+cW/2,ry+8,{align:'center'});
+        }
+      });
+      wn++;week=Array(8).fill(null);
+    }
+  }
+  const cnt={};docs.forEach(d=>cnt[d.id]=0);
+  Object.values(sc).forEach(v=>{if(v!==undefined&&v!==null&&cnt[v]!==undefined)cnt[v]++});
+  const fy=sY+rH+(wn*rH)+8;
+  doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(60,60,60);
+  doc.text('Shift counts:',sX,fy);let fx=sX+28;
+  docs.forEach(d=>{doc.setFont('helvetica','normal');doc.text(d.en+': '+cnt[d.id],fx,fy);fx+=30;if(fx>272)fx=sX+28;});
+  doc.save('Wolfson_'+mn+'_'+vY+'.pdf');
+  showToast(t('PDF הורד ✓','PDF downloaded ✓'));
+}
+
+// ═══ TOAST ═══
+function showToast(msg,type){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='toast'+(type==='err'?' err':'');
+  el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600);
+}
+
+
+// ═══════════════════════════════════════════════════
+// GIST SYNC
+// ═══════════════════════════════════════════════════
+const GIST_ID    = 'a0ec332ca90ae7cf75692741bd0252ab';
+const GIST_TOKEN = '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';
+const GIST_FILE  = 'wolfson_data.json';
+const GIST_URL   = 'https://api.github.com/gists/' + GIST_ID;
+
+let syncInProgress = false;
+let pendingSync    = false;
+let lastEtag       = null;
+
+// Показываем иконку синхронизации в топбаре
+function showSyncStatus(state) {
+  // state: 'syncing' | 'ok' | 'err'
+  let el = document.getElementById('sync-icon');
+  if (!el) return;
+  el.title = state === 'syncing' ? (lang==='he'?'מסנכרן...':'Syncing...')
+           : state === 'ok'      ? (lang==='he'?'מסונכרן ✓':'Synced ✓')
+           : (lang==='he'?'שגיאת סנכרון':'Sync error');
+  el.style.color = state === 'syncing' ? 'var(--yel)'
+                 : state === 'ok'      ? 'var(--grn)'
+                 : 'var(--red)';
+  el.textContent = state === 'syncing' ? '↻' : state === 'ok' ? '✓' : '✗';
+  el.style.animation = state === 'syncing' ? 'spin 1s linear infinite' : 'none';
+}
+
+// Загрузить данные из Gist → localStorage
+async function pullFromGist() {
+  try {
+    showSyncStatus('syncing');
+    const headers = {
+      'Authorization': 'token ' + GIST_TOKEN,
+      'Accept': 'application/vnd.github.v3+json',
+    };
+    if (lastEtag) headers['If-None-Match'] = lastEtag;
+
+    const res = await fetch(GIST_URL, { headers });
+
+    if (res.status === 304) { showSyncStatus('ok'); return false; } // not modified
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    lastEtag = res.headers.get('etag');
+    const gist = await res.json();
+    const raw  = gist.files?.[GIST_FILE]?.content;
+    if (!raw) { showSyncStatus('ok'); return false; }
+
+    const remote = JSON.parse(raw);
+    let changed = false;
+
+    // Merge: remote wins, but only overwrite if remote has data
+    if (remote.docs   && remote.docs.length)   { setDocs(remote.docs);     changed = true; }
+    if (remote.sched  && Object.keys(remote.sched).length)  { setSched(remote.sched);   changed = true; }
+    if (remote.wishes && Object.keys(remote.wishes).length) { setWish(remote.wishes);   changed = true; }
+
+    showSyncStatus('ok');
+    return changed;
+  } catch(e) {
+    console.warn('Gist pull error:', e);
+    showSyncStatus('err');
+    return false;
+  }
+}
+
+// Записать localStorage → Gist
+async function pushToGist() {
+  if (syncInProgress) { pendingSync = true; return; }
+  syncInProgress = true;
+  showSyncStatus('syncing');
+  try {
+    const payload = {
+      docs:   getDocs(),
+      sched:  getSched(),
+      wishes: getWish(),
+    };
+    const body = {
+      files: { [GIST_FILE]: { content: JSON.stringify(payload, null, 2) } }
+    };
+    const res = await fetch(GIST_URL, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': 'token ' + GIST_TOKEN,
+        'Content-Type':  'application/json',
+        'Accept':        'application/vnd.github.v3+json',
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    lastEtag = null; // сбросить, чтобы следующий pull подхватил свежее
+    showSyncStatus('ok');
+  } catch(e) {
+    console.warn('Gist push error:', e);
+    showSyncStatus('err');
+  } finally {
+    syncInProgress = false;
+    if (pendingSync) { pendingSync = false; pushToGist(); }
+  }
+}
+
+// Обёртки setDocs/setSched/setWish → автосинк
+const _setDocs  = setDocs;
+const _setSched = setSched;
+const _setWish  = setWish;
+function setDocs(d)  { _setDocs(d);  schedulePush(); }
+function setSched(d) { _setSched(d); schedulePush(); }
+function setWish(d)  { _setWish(d);  schedulePush(); }
+
+let pushTimer = null;
+function schedulePush() {
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(pushToGist, 800); // debounce 800ms
+}
+
+// Опрос каждые 30 сек пока приложение открыто
+async function startAutoSync() {
+  const changed = await pullFromGist();
+  if (changed && cu) { wDraft = null; renderAll(); }
+  setTimeout(startAutoSync, 30000);
+}
+
+// CSS для спиннера
+const syncStyle = document.createElement('style');
+syncStyle.textContent = \`
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+#sync-icon { display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:50%;
+  font-size:13px;font-weight:800;cursor:default;
+  transition:color .3s;color:var(--t3); }
+\`;
+document.head.appendChild(syncStyle);
+
+// ═══ INIT ═══
+(function(){
+  if(!localStorage.getItem(SK_DOCS))setDocs(DEFAULT_DOCTORS);
+  if(!localStorage.getItem(SK_VER)){
+    const y=today.getFullYear(),m=today.getMonth();
+    const data={},days=new Date(y,m+1,0).getDate();
+    let idx=0;
+    for(let d=1;d<=days;d++){
+      const dow=new Date(y,m,d).getDay(),dk=y+'-'+m+'-'+d;
+      if(dow===5){data[dk+'_1']=idx%8;idx++;data[dk+'_2']=idx%8;idx++;}
+      else{data[dk]=idx%8;idx++;}
+    }
+    const all={};all[mk(y,m)]=data;setSched(all);
+    localStorage.setItem(SK_VER,'1');
+  }
+  // Initial pull from Gist (async, non-blocking)
+  setTimeout(startAutoSync, 500);
+})();
+</script>
+</body>
+</html>
