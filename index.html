@@ -275,12 +275,52 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
     <div id="d-wish"></div>
   </div>
 
+  <!-- SETTINGS (superadmin) -->
+  <div id="pg-settings" class="page" style="display:none">
+    <div class="stitle"><span class="he">הגדרות סנכרון</span><span class="en">Sync Settings</span></div>
+
+    <div class="ibox"><span class="ibox-i">🔐</span>
+      <span><span class="he">הטוקן נשמר רק במכשיר זה (localStorage) ואינו מופיע בקוד. יש להזין אותו בכל מכשיר בנפרד.</span><span class="en">The token is stored only on this device (localStorage) and never in the code. Enter it separately on each device.</span></span>
+    </div>
+
+    <div class="fg">
+      <label class="fl">GitHub Personal Access Token (scope: gist)</label>
+      <div style="display:flex;gap:8px">
+        <input class="finp" id="cfg-token" type="password" dir="ltr" style="text-align:left;flex:1" placeholder="ghp_...">
+        <button class="bsm pri" onclick="toggleTokenVis()" id="cfg-eye" style="padding:11px 13px;flex-shrink:0">👁</button>
+      </div>
+    </div>
+
+    <div id="cfg-status" style="margin-bottom:14px;font-size:12px;display:none"></div>
+
+    <button class="bs" style="margin-bottom:10px" onclick="saveToken()">
+      <span class="he">💾 שמירת טוקן</span><span class="en">💾 Save Token</span>
+    </button>
+    <button class="bsm" style="width:100%;padding:12px;margin-bottom:10px" onclick="testGistConnection()">
+      <span class="he">🔌 בדיקת חיבור</span><span class="en">🔌 Test Connection</span>
+    </button>
+    <button class="bsm" style="width:100%;padding:12px;margin-bottom:10px" onclick="forcePush()">
+      <span class="he">⬆️ העלאה ידנית ל-Gist</span><span class="en">⬆️ Force Push to Gist</span>
+    </button>
+    <button class="bsm" style="width:100%;padding:12px" onclick="forcePull()">
+      <span class="he">⬇️ הורדה ידנית מ-Gist</span><span class="en">⬇️ Force Pull from Gist</span>
+    </button>
+
+    <div class="sep"></div>
+    <div style="font-size:11px;color:var(--t3);line-height:1.7">
+      <div style="font-weight:700;color:var(--t2);margin-bottom:6px">Gist ID: <span style="font-family:monospace">a0ec332ca90ae7cf75692741bd0252ab</span></div>
+      <span class="he">כיצד לקבל טוקן: GitHub ← Settings ← Developer settings ← Personal access tokens (classic) ← Generate new token ← scope: gist בלבד</span>
+      <span class="en">How to get a token: GitHub → Settings → Developer settings → Personal access tokens (classic) → Generate new token → scope: gist only</span>
+    </div>
+  </div>
+
   <div class="bnav">
     <button class="nv active" id="nav-s" onclick="go('schedule',this)"><span class="ni">📅</span><span class="he">גרפיק</span><span class="en">Schedule</span></button>
     <button class="nv" id="nav-w" onclick="go('wishes',this)"><span class="ni">🙅</span><span class="he">מניעות</span><span class="en">Wishes</span></button>
     <button class="nv" id="nav-c" style="display:none" onclick="go('constr',this)"><span class="ni">🔧</span><span class="he">בנייה</span><span class="en">Builder</span></button>
     <button class="nv" id="nav-r" style="display:none" onclick="go('reports',this)"><span class="ni">📊</span><span class="he">דוחות</span><span class="en">Reports</span></button>
     <button class="nv" id="nav-d" style="display:none" onclick="go('data',this)"><span class="ni">⚙️</span><span class="he">ניהול</span><span class="en">Admin</span></button>
+    <button class="nv" id="nav-cfg" style="display:none" onclick="go('settings',this)"><span class="ni">🔑</span><span class="he">סנכרון</span><span class="en">Sync</span></button>
   </div>
 </div>
 
@@ -447,7 +487,11 @@ function initApp(){
   nav_d.style.display=isSuperA()?'flex':'none';
   if(isAdmin()) document.getElementById('pg-constr').style.display='';
   if(isSecretary()||isSuperA()) document.getElementById('pg-reports').style.display='';
-  if(isSuperA()) document.getElementById('pg-data').style.display='';
+  if(isSuperA()){
+    document.getElementById('pg-data').style.display='';
+    document.getElementById('pg-settings').style.display='';
+    document.getElementById('nav-cfg').style.display='flex';
+  }
 }
 
 function refreshTopbar(){
@@ -473,6 +517,11 @@ function renderAll(){
   if(!cu)return;
   cu._idx=getDocs().findIndex(d=>d.id===cu.id);
   refreshTopbar();
+  // warn superadmin if token not set
+  if(isSuperA() && !getToken()){
+    const si = document.getElementById('sync-icon');
+    if(si){ si.textContent='⚠️'; si.style.color='var(--yel)'; si.title=lang==='he'?'טוקן סנכרון לא מוגדר — לחץ על סנכרון':'Sync token not set — go to Sync settings'; }
+  }
   renderSched();
   if(cu.role!=='staff'&&cu.role!=='secretary') renderWishes(false);
   if(isAdmin()) renderCons();
@@ -1106,10 +1155,15 @@ function showToast(msg,type){
 // ═══════════════════════════════════════════════════
 // GIST SYNC
 // ═══════════════════════════════════════════════════
-const GIST_ID    = 'a0ec332ca90ae7cf75692741bd0252ab';
-const GIST_TOKEN = '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';
-const GIST_FILE  = 'wolfson_data.json';
-const GIST_URL   = 'https://api.github.com/gists/' + GIST_ID;
+const GIST_ID     = 'a0ec332ca90ae7cf75692741bd0252ab';
+const GIST_FILE   = 'wolfson_data.json';
+const GIST_URL    = 'https://api.github.com/gists/' + GIST_ID;
+const SHARED_TOKEN = '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';
+const SK_TOKEN    = 'wf_gist_token'; // опциональный персональный токен суперадмина
+
+// Приоритет: персональный токен суперадмина > общий токен
+function getToken(){ return localStorage.getItem(SK_TOKEN) || SHARED_TOKEN; }
+function setToken(t){ localStorage.setItem(SK_TOKEN, t) }
 
 let syncInProgress = false;
 let pendingSync    = false;
@@ -1132,10 +1186,11 @@ function showSyncStatus(state) {
 
 // Загрузить данные из Gist → localStorage
 async function pullFromGist() {
+  if(!getToken()){ showSyncStatus('err'); return false; }
   try {
     showSyncStatus('syncing');
     const headers = {
-      'Authorization': 'token ' + GIST_TOKEN,
+      'Authorization': 'token ' + getToken(),
       'Accept': 'application/vnd.github.v3+json',
     };
     if (lastEtag) headers['If-None-Match'] = lastEtag;
@@ -1169,6 +1224,7 @@ async function pullFromGist() {
 
 // Записать localStorage → Gist
 async function pushToGist() {
+  if(!getToken()){ showSyncStatus('err'); return; }
   if (syncInProgress) { pendingSync = true; return; }
   syncInProgress = true;
   showSyncStatus('syncing');
@@ -1184,7 +1240,7 @@ async function pushToGist() {
     const res = await fetch(GIST_URL, {
       method: 'PATCH',
       headers: {
-        'Authorization': 'token ' + GIST_TOKEN,
+        'Authorization': 'token ' + getToken(),
         'Content-Type':  'application/json',
         'Accept':        'application/vnd.github.v3+json',
       },
@@ -1233,6 +1289,89 @@ syncStyle.textContent = \`
   transition:color .3s;color:var(--t3); }
 \`;
 document.head.appendChild(syncStyle);
+
+// ═══ SETTINGS PAGE ═══
+function loadTokenField(){
+  const t = getToken();
+  const el = document.getElementById('cfg-token');
+  if(el) el.value = t;
+  updateCfgStatus();
+}
+
+function toggleTokenVis(){
+  const el = document.getElementById('cfg-token');
+  if(!el) return;
+  el.type = el.type==='password' ? 'text' : 'password';
+}
+
+function updateCfgStatus(){
+  const el = document.getElementById('cfg-status');
+  if(!el) return;
+  const tk = getToken();
+  if(tk){
+    el.style.display='block';
+    el.style.color='var(--grn)';
+    el.textContent = (lang==='he'?'טוקן מוגדר: ':'Token set: ') + tk.substring(0,8)+'...'+tk.slice(-4);
+  } else {
+    el.style.display='block';
+    el.style.color='var(--red)';
+    el.textContent = lang==='he'?'⚠️ טוקן לא מוגדר — סנכרון לא פעיל':'⚠️ Token not set — sync inactive';
+  }
+}
+
+function saveToken(){
+  const val = document.getElementById('cfg-token').value.trim();
+  if(!val){ showToast(lang==='he'?'הכנס טוקן':'Enter token','err'); return; }
+  if(!val.startsWith('ghp_') && !val.startsWith('github_pat_')){
+    showToast(lang==='he'?'טוקן לא תקין (חייב להתחיל ב-ghp_)':'Invalid token format','err'); return;
+  }
+  setToken(val);
+  updateCfgStatus();
+  showToast(lang==='he'?'טוקן נשמר ✓':'Token saved ✓');
+}
+
+async function testGistConnection(){
+  const el = document.getElementById('cfg-status');
+  if(!getToken()){ showToast(lang==='he'?'יש להזין טוקן תחילה':'Enter token first','err'); return; }
+  el.style.display='block'; el.style.color='var(--yel)';
+  el.textContent = lang==='he'?'בודק חיבור...':'Testing connection...';
+  try {
+    const res = await fetch(GIST_URL, {
+      headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json'}
+    });
+    if(res.ok){
+      el.style.color='var(--grn)';
+      el.textContent = lang==='he'?'✓ חיבור תקין! Gist נמצא ונגיש':'✓ Connection OK! Gist found and accessible';
+      showToast(lang==='he'?'חיבור תקין ✓':'Connection OK ✓');
+    } else {
+      el.style.color='var(--red)';
+      el.textContent = (lang==='he'?'✗ שגיאה: ':'✗ Error: ') + res.status + (res.status===401?' (טוקן שגוי)':res.status===404?' (Gist לא נמצא)':'');
+    }
+  } catch(e){
+    el.style.color='var(--red)';
+    el.textContent = lang==='he'?'✗ שגיאת רשת':'✗ Network error';
+  }
+}
+
+async function forcePush(){
+  showToast(lang==='he'?'שולח ל-Gist...':'Pushing to Gist...');
+  await pushToGist();
+  showToast(lang==='he'?'הועלה ✓':'Pushed ✓');
+}
+
+async function forcePull(){
+  showToast(lang==='he'?'מוריד מ-Gist...':'Pulling from Gist...');
+  const changed = await pullFromGist();
+  if(changed){ wDraft=null; renderAll(); }
+  showToast(lang==='he'?'הורד ✓':'Pulled ✓');
+}
+
+// Load token into field when page becomes visible
+const _go = go;
+function go(name, btn){
+  _go(name, btn);
+  if(name==='settings') loadTokenField();
+}
 
 // ═══ INIT ═══
 (function(){
