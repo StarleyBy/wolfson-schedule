@@ -1207,10 +1207,10 @@ async function pullFromGist() {
     const remote = JSON.parse(raw);
     let changed = false;
 
-    // Merge: remote wins, but only overwrite if remote has data
-    if (remote.docs   && remote.docs.length)   { setDocs(remote.docs);     changed = true; }
-    if (remote.sched  && Object.keys(remote.sched).length)  { setSched(remote.sched);   changed = true; }
-    if (remote.wishes && Object.keys(remote.wishes).length) { setWish(remote.wishes);   changed = true; }
+    // Используем _save* чтобы не триггерить push обратно в Gist
+    if (remote.docs   && remote.docs.length)                { _saveDocs(remote.docs);   changed = true; }
+    if (remote.sched  && Object.keys(remote.sched).length)  { _saveSched(remote.sched); changed = true; }
+    if (remote.wishes && Object.keys(remote.wishes).length) { _saveWish(remote.wishes); changed = true; }
 
     showSyncStatus('ok');
     return changed;
@@ -1257,11 +1257,14 @@ async function pushToGist() {
   }
 }
 
-// Обёртки setDocs/setSched/setWish → автосинк
-// Используем прямые вызовы localStorage, чтобы не было рекурсии
+// set* — пишут в localStorage и планируют синк с Gist
 function setDocs(d)  { localStorage.setItem(SK_DOCS,  JSON.stringify(d)); schedulePush(); }
 function setSched(d) { localStorage.setItem(SK_SCHED, JSON.stringify(d)); schedulePush(); }
 function setWish(d)  { localStorage.setItem(SK_WISH,  JSON.stringify(d)); schedulePush(); }
+// Внутренние функции записи БЕЗ триггера синка — используются только в pullFromGist
+function _saveDocs(d)  { localStorage.setItem(SK_DOCS,  JSON.stringify(d)); }
+function _saveSched(d) { localStorage.setItem(SK_SCHED, JSON.stringify(d)); }
+function _saveWish(d)  { localStorage.setItem(SK_WISH,  JSON.stringify(d)); }
 
 let pushTimer = null;
 function schedulePush() {
@@ -1272,7 +1275,10 @@ function schedulePush() {
 // Опрос каждые 30 сек пока приложение открыто
 async function startAutoSync() {
   const changed = await pullFromGist();
-  if (changed && cu) { wDraft = null; renderAll(); }
+  if (changed) {
+    wDraft = null;
+    if (cu) renderAll(); // обновляем UI если пользователь уже вошёл
+  }
   setTimeout(startAutoSync, 30000);
 }
 
@@ -1367,7 +1373,9 @@ async function forcePull(){
 
 // ═══ INIT ═══
 (function(){
-  if(!localStorage.getItem(SK_DOCS))setDocs(DEFAULT_DOCTORS);
+  // Используем _save* при инициализации — чтобы не отправлять дефолтные
+  // данные в Gist раньше чем придут реальные данные оттуда
+  if(!localStorage.getItem(SK_DOCS)) _saveDocs(DEFAULT_DOCTORS);
   if(!localStorage.getItem(SK_VER)){
     const y=today.getFullYear(),m=today.getMonth();
     const data={},days=new Date(y,m+1,0).getDate();
@@ -1377,10 +1385,11 @@ async function forcePull(){
       if(dow===5){data[dk+'_1']=idx%8;idx++;data[dk+'_2']=idx%8;idx++;}
       else{data[dk]=idx%8;idx++;}
     }
-    const all={};all[mk(y,m)]=data;setSched(all);
+    const all={};all[mk(y,m)]=data;
+    _saveSched(all);
     localStorage.setItem(SK_VER,'1');
   }
-  // Initial pull from Gist (async, non-blocking)
+  // Pull из Gist при старте — получаем актуальные данные
   setTimeout(startAutoSync, 500);
 })();
 </script>
