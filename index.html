@@ -385,7 +385,25 @@ const DEFAULT_DOCTORS=[
 function getDocs(){try{const d=JSON.parse(localStorage.getItem(SK_DOCS));return d&&d.length?d:DEFAULT_DOCTORS}catch{return DEFAULT_DOCTORS}}
 function getSched(){try{return JSON.parse(localStorage.getItem(SK_SCHED)||'{}')}catch{return{}}}
 function getWish(){try{return JSON.parse(localStorage.getItem(SK_WISH)||'{}')}catch{return{}}}
-// setDocs / setSched / setWish defined below with Gist sync
+
+// schedulePush — debounce, объявляется ДО всех set* функций
+let pushTimer = null;
+function schedulePush() {
+  clearTimeout(pushTimer);
+  if(typeof pushToSheets === 'function') {
+    pushTimer = setTimeout(pushToSheets, 800);
+  }
+}
+
+// Внутренние функции записи БЕЗ триггера синка — используются в pull и init
+function _saveDocs(d)  { localStorage.setItem(SK_DOCS,  JSON.stringify(d)); }
+function _saveSched(d) { localStorage.setItem(SK_SCHED, JSON.stringify(d)); }
+function _saveWish(d)  { localStorage.setItem(SK_WISH,  JSON.stringify(d)); }
+
+// Публичные set* — пишут в localStorage И планируют синк с Google Sheets
+function setDocs(d)  { localStorage.setItem(SK_DOCS,  JSON.stringify(d)); schedulePush(); }
+function setSched(d) { localStorage.setItem(SK_SCHED, JSON.stringify(d)); schedulePush(); }
+function setWish(d)  { localStorage.setItem(SK_WISH,  JSON.stringify(d)); schedulePush(); }
 function mk(y,m){return y+'-'+String(m+1).padStart(2,'0')}
 
 const DCLS=['c0','c1','c2','c3','c4','c5','c6','c7','c8','c9'];
@@ -1147,7 +1165,6 @@ const GS_URL = 'https://script.google.com/macros/s/AKfycbwTz_IqkpUmW8MAjuNjIY64S
 
 let syncInProgress = false;
 let pendingSync    = false;
-let pushTimer      = null;
 
 // ── UI ──
 function showSyncStatus(state) {
@@ -1220,12 +1237,6 @@ async function pushToSheets() {
     syncInProgress = false;
     if (pendingSync) { pendingSync = false; pushToSheets(); }
   }
-}
-
-// ── Debounced push (800ms after last change) ──
-function schedulePush() {
-  clearTimeout(pushTimer);
-  pushTimer = setTimeout(pushToSheets, 800);
 }
 
 // ── Auto-sync every 30s ──
