@@ -277,40 +277,32 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
 
   <!-- SETTINGS (superadmin) -->
   <div id="pg-settings" class="page" style="display:none">
-    <div class="stitle"><span class="he">הגדרות סנכרון</span><span class="en">Sync Settings</span></div>
+    <div class="stitle"><span class="he">סנכרון נתונים</span><span class="en">Data Sync</span></div>
 
-    <div class="ibox"><span class="ibox-i">🔐</span>
-      <span><span class="he">הטוקן נשמר רק במכשיר זה (localStorage) ואינו מופיע בקוד. יש להזין אותו בכל מכשיר בנפרד.</span><span class="en">The token is stored only on this device (localStorage) and never in the code. Enter it separately on each device.</span></span>
-    </div>
-
-    <div class="fg">
-      <label class="fl">GitHub Personal Access Token (scope: gist)</label>
-      <div style="display:flex;gap:8px">
-        <input class="finp" id="cfg-token" type="password" dir="ltr" style="text-align:left;flex:1" placeholder="ghp_...">
-        <button class="bsm pri" onclick="toggleTokenVis()" id="cfg-eye" style="padding:11px 13px;flex-shrink:0">👁</button>
-      </div>
+    <div class="ibox" style="background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.3)">
+      <span class="ibox-i">☁️</span>
+      <span style="color:var(--grn)">
+        <span class="he">הנתונים מסונכרנים אוטומטית דרך Google Sheets. אין צורך בהגדרות נוספות בכל מכשיר.</span>
+        <span class="en">Data syncs automatically via Google Sheets. No setup needed on each device.</span>
+      </span>
     </div>
 
     <div id="cfg-status" style="margin-bottom:14px;font-size:12px;display:none"></div>
 
-    <button class="bs" style="margin-bottom:10px" onclick="saveToken()">
-      <span class="he">💾 שמירת טוקן</span><span class="en">💾 Save Token</span>
-    </button>
-    <button class="bsm" style="width:100%;padding:12px;margin-bottom:10px" onclick="testGistConnection()">
+    <button class="bs" style="margin-bottom:10px" onclick="testSheetsConn()">
       <span class="he">🔌 בדיקת חיבור</span><span class="en">🔌 Test Connection</span>
     </button>
-    <button class="bsm" style="width:100%;padding:12px;margin-bottom:10px" onclick="forcePush()">
-      <span class="he">⬆️ העלאה ידנית ל-Gist</span><span class="en">⬆️ Force Push to Gist</span>
+    <button class="bsm" style="width:100%;padding:13px;margin-bottom:10px;font-size:14px;font-weight:700" onclick="forcePush()">
+      <span class="he">⬆️ העלאה ידנית ל-Sheets</span><span class="en">⬆️ Force Push to Sheets</span>
     </button>
-    <button class="bsm" style="width:100%;padding:12px" onclick="forcePull()">
-      <span class="he">⬇️ הורדה ידנית מ-Gist</span><span class="en">⬇️ Force Pull from Gist</span>
+    <button class="bsm" style="width:100%;padding:13px;font-size:14px;font-weight:700" onclick="forcePull()">
+      <span class="he">⬇️ הורדה ידנית מ-Sheets</span><span class="en">⬇️ Force Pull from Sheets</span>
     </button>
 
     <div class="sep"></div>
-    <div style="font-size:11px;color:var(--t3);line-height:1.7">
-      <div style="font-weight:700;color:var(--t2);margin-bottom:6px">Gist ID: <span style="font-family:monospace">a0ec332ca90ae7cf75692741bd0252ab</span></div>
-      <span class="he">כיצד לקבל טוקן: GitHub ← Settings ← Developer settings ← Personal access tokens (classic) ← Generate new token ← scope: gist בלבד</span>
-      <span class="en">How to get a token: GitHub → Settings → Developer settings → Personal access tokens (classic) → Generate new token → scope: gist only</span>
+    <div style="font-size:11px;color:var(--t3);line-height:1.8">
+      <div style="font-weight:700;color:var(--t2);margin-bottom:4px">Google Apps Script URL:</div>
+      <div style="font-family:monospace;font-size:9px;word-break:break-all;color:var(--t3)">AKfycbwTz_IqkpUmW8MAjuNjIY64SoFpk8Altifea78G99RVQp-EcdNuCuwEUCBWuwdPrhuX</div>
     </div>
   </div>
 
@@ -489,6 +481,7 @@ function initApp(){
     document.getElementById('pg-data').style.display='';
     document.getElementById('pg-settings').style.display='';
     document.getElementById('nav-cfg').style.display='flex';
+    // sync always active via Google Sheets
   }
 }
 
@@ -516,11 +509,7 @@ function renderAll(){
   if(!cu)return;
   cu._idx=getDocs().findIndex(d=>d.id===cu.id);
   refreshTopbar();
-  // warn superadmin if token not set
-  if(isSuperA() && !getToken()){
-    const si = document.getElementById('sync-icon');
-    if(si){ si.textContent='⚠️'; si.style.color='var(--yel)'; si.title=lang==='he'?'טוקן סנכרון לא מוגדר — לחץ על סנכרון':'Sync token not set — go to Sync settings'; }
-  }
+  // Sync via Google Sheets — always active, no token check needed
   renderSched();
   if(cu.role!=='staff'&&cu.role!=='secretary') renderWishes(false);
   if(isAdmin()) renderCons();
@@ -1152,62 +1141,43 @@ function showToast(msg,type){
 
 
 // ═══════════════════════════════════════════════════
-// GIST SYNC
+// GOOGLE SHEETS SYNC
 // ═══════════════════════════════════════════════════
-const GIST_ID     = 'a0ec332ca90ae7cf75692741bd0252ab';
-const GIST_FILE   = 'wolfson_data.json';
-const GIST_URL    = 'https://api.github.com/gists/' + GIST_ID;
-const SHARED_TOKEN = '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';
-const SK_TOKEN    = 'wf_gist_token'; // опциональный персональный токен суперадмина
-
-// Приоритет: персональный токен суперадмина > общий токен
-function getToken(){ return localStorage.getItem(SK_TOKEN) || SHARED_TOKEN; }
-function setToken(t){ localStorage.setItem(SK_TOKEN, t) }
+const GS_URL = 'https://script.google.com/macros/s/AKfycbwTz_IqkpUmW8MAjuNjIY64SoFpk8Altifea78G99RVQp-EcdNuCuwEUCBWuwdPrhuX/exec';
 
 let syncInProgress = false;
 let pendingSync    = false;
-let lastEtag       = null;
+let pushTimer      = null;
 
-// Показываем иконку синхронизации в топбаре
+// ── UI ──
 function showSyncStatus(state) {
-  // state: 'syncing' | 'ok' | 'err'
-  let el = document.getElementById('sync-icon');
+  const el = document.getElementById('sync-icon');
   if (!el) return;
-  el.title = state === 'syncing' ? (lang==='he'?'מסנכרן...':'Syncing...')
-           : state === 'ok'      ? (lang==='he'?'מסונכרן ✓':'Synced ✓')
-           : (lang==='he'?'שגיאת סנכרון':'Sync error');
-  el.style.color = state === 'syncing' ? 'var(--yel)'
-                 : state === 'ok'      ? 'var(--grn)'
-                 : 'var(--red)';
-  el.textContent = state === 'syncing' ? '↻' : state === 'ok' ? '✓' : '✗';
-  el.style.animation = state === 'syncing' ? 'spin 1s linear infinite' : 'none';
+  const labels = {
+    syncing: { he:'מסנכרן...', en:'Syncing...',  color:'var(--yel)', icon:'↻', spin:true  },
+    ok:      { he:'מסונכרן ✓', en:'Synced ✓',    color:'var(--grn)', icon:'✓', spin:false },
+    err:     { he:'שגיאת סנכרון', en:'Sync error', color:'var(--red)', icon:'✗', spin:false },
+    off:     { he:'לא מחובר',  en:'Offline',     color:'var(--t3)',  icon:'·', spin:false },
+  };
+  const s = labels[state] || labels.off;
+  el.title     = lang === 'he' ? s.he : s.en;
+  el.style.color      = s.color;
+  el.textContent      = s.icon;
+  el.style.animation  = s.spin ? 'spin 1s linear infinite' : 'none';
 }
 
-// Загрузить данные из Gist → localStorage
-async function pullFromGist() {
-  if(!getToken()){ showSyncStatus('err'); return false; }
+// ── PULL: Google Sheets → localStorage ──
+async function pullFromSheets() {
   try {
     showSyncStatus('syncing');
-    const headers = {
-      'Authorization': 'token ' + getToken(),
-      'Accept': 'application/vnd.github.v3+json',
-    };
-    if (lastEtag) headers['If-None-Match'] = lastEtag;
-
-    const res = await fetch(GIST_URL, { headers });
-
-    if (res.status === 304) { showSyncStatus('ok'); return false; } // not modified
+    const res = await fetch(GS_URL + '?v=' + Date.now());
     if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'unknown');
 
-    lastEtag = res.headers.get('etag');
-    const gist = await res.json();
-    const raw  = gist.files?.[GIST_FILE]?.content;
-    if (!raw) { showSyncStatus('ok'); return false; }
-
-    const remote = JSON.parse(raw);
+    const remote = json.data || {};
     let changed = false;
 
-    // Используем _save* чтобы не триггерить push обратно в Gist
     if (remote.docs   && remote.docs.length)                { _saveDocs(remote.docs);   changed = true; }
     if (remote.sched  && Object.keys(remote.sched).length)  { _saveSched(remote.sched); changed = true; }
     if (remote.wishes && Object.keys(remote.wishes).length) { _saveWish(remote.wishes); changed = true; }
@@ -1215,161 +1185,113 @@ async function pullFromGist() {
     showSyncStatus('ok');
     return changed;
   } catch(e) {
-    console.warn('Gist pull error:', e);
+    console.warn('Sheets pull error:', e);
     showSyncStatus('err');
     return false;
   }
 }
 
-// Записать localStorage → Gist
-async function pushToGist() {
-  if(!getToken()){ showSyncStatus('err'); return; }
+// ── PUSH: localStorage → Google Sheets ──
+async function pushToSheets() {
   if (syncInProgress) { pendingSync = true; return; }
   syncInProgress = true;
   showSyncStatus('syncing');
   try {
     const payload = {
-      docs:   getDocs(),
-      sched:  getSched(),
-      wishes: getWish(),
+      action: 'setAll',
+      data: {
+        docs:   getDocs(),
+        sched:  getSched(),
+        wishes: getWish(),
+      }
     };
-    const body = {
-      files: { [GIST_FILE]: { content: JSON.stringify(payload, null, 2) } }
-    };
-    const res = await fetch(GIST_URL, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': 'token ' + getToken(),
-        'Content-Type':  'application/json',
-        'Accept':        'application/vnd.github.v3+json',
-      },
-      body: JSON.stringify(body),
+    const res = await fetch(GS_URL, {
+      method:  'POST',
+      body:    JSON.stringify(payload),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    lastEtag = null; // сбросить, чтобы следующий pull подхватил свежее
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'unknown');
     showSyncStatus('ok');
   } catch(e) {
-    console.warn('Gist push error:', e);
+    console.warn('Sheets push error:', e);
     showSyncStatus('err');
   } finally {
     syncInProgress = false;
-    if (pendingSync) { pendingSync = false; pushToGist(); }
+    if (pendingSync) { pendingSync = false; pushToSheets(); }
   }
 }
 
-// set* — пишут в localStorage и планируют синк с Gist
-function setDocs(d)  { localStorage.setItem(SK_DOCS,  JSON.stringify(d)); schedulePush(); }
-function setSched(d) { localStorage.setItem(SK_SCHED, JSON.stringify(d)); schedulePush(); }
-function setWish(d)  { localStorage.setItem(SK_WISH,  JSON.stringify(d)); schedulePush(); }
-// Внутренние функции записи БЕЗ триггера синка — используются только в pullFromGist
-function _saveDocs(d)  { localStorage.setItem(SK_DOCS,  JSON.stringify(d)); }
-function _saveSched(d) { localStorage.setItem(SK_SCHED, JSON.stringify(d)); }
-function _saveWish(d)  { localStorage.setItem(SK_WISH,  JSON.stringify(d)); }
-
-let pushTimer = null;
+// ── Debounced push (800ms after last change) ──
 function schedulePush() {
   clearTimeout(pushTimer);
-  pushTimer = setTimeout(pushToGist, 800); // debounce 800ms
+  pushTimer = setTimeout(pushToSheets, 800);
 }
 
-// Опрос каждые 30 сек пока приложение открыто
+// ── Auto-sync every 30s ──
 async function startAutoSync() {
-  const changed = await pullFromGist();
+  const changed = await pullFromSheets();
   if (changed) {
     wDraft = null;
-    if (cu) renderAll(); // обновляем UI если пользователь уже вошёл
+    if (cu) renderAll();
   }
   setTimeout(startAutoSync, 30000);
 }
 
-// CSS для спиннера
+// CSS для sync icon
 const syncStyle = document.createElement('style');
 syncStyle.textContent = [
   '@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }',
   '#sync-icon { display:inline-flex;align-items:center;justify-content:center;',
-  '  width:22px;height:22px;border-radius:50%;',
-  '  font-size:13px;font-weight:800;cursor:default;',
-  '  transition:color .3s;color:var(--t3); }'
+  '  width:22px;height:22px;border-radius:50%;font-size:13px;font-weight:800;',
+  '  cursor:default;transition:color .3s;color:var(--t3); }'
 ].join('\n');
 document.head.appendChild(syncStyle);
 
 // ═══ SETTINGS PAGE ═══
-function loadTokenField(){
-  const t = getToken();
-  const el = document.getElementById('cfg-token');
-  if(el) el.value = t;
-  updateCfgStatus();
-}
-
-function toggleTokenVis(){
-  const el = document.getElementById('cfg-token');
-  if(!el) return;
-  el.type = el.type==='password' ? 'text' : 'password';
-}
+function loadTokenField(){ updateCfgStatus(); }
 
 function updateCfgStatus(){
   const el = document.getElementById('cfg-status');
   if(!el) return;
-  const tk = getToken();
-  if(tk){
-    el.style.display='block';
-    el.style.color='var(--grn)';
-    el.textContent = (lang==='he'?'טוקן מוגדר: ':'Token set: ') + tk.substring(0,8)+'...'+tk.slice(-4);
-  } else {
-    el.style.display='block';
-    el.style.color='var(--red)';
-    el.textContent = lang==='he'?'⚠️ טוקן לא מוגדר — סנכרון לא פעיל':'⚠️ Token not set — sync inactive';
-  }
+  el.style.display='block';
+  el.style.color='var(--grn)';
+  el.textContent = lang==='he'
+    ? '☁️ סנכרון פעיל דרך Google Sheets'
+    : '☁️ Sync active via Google Sheets';
 }
 
-function saveToken(){
-  const val = document.getElementById('cfg-token').value.trim();
-  if(!val){ showToast(lang==='he'?'הכנס טוקן':'Enter token','err'); return; }
-  if(!val.startsWith('ghp_') && !val.startsWith('github_pat_')){
-    showToast(lang==='he'?'טוקן לא תקין (חייב להתחיל ב-ghp_)':'Invalid token format','err'); return;
-  }
-  setToken(val);
-  updateCfgStatus();
-  showToast(lang==='he'?'טוקן נשמר ✓':'Token saved ✓');
-}
-
-async function testGistConnection(){
+async function testSheetsConn(){
   const el = document.getElementById('cfg-status');
-  if(!getToken()){ showToast(lang==='he'?'יש להזין טוקן תחילה':'Enter token first','err'); return; }
   el.style.display='block'; el.style.color='var(--yel)';
   el.textContent = lang==='he'?'בודק חיבור...':'Testing connection...';
   try {
-    const res = await fetch(GIST_URL, {
-      headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json'}
-    });
-    if(res.ok){
+    const res = await fetch(GS_URL + '?v=' + Date.now());
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if(json.ok){
       el.style.color='var(--grn)';
-      el.textContent = lang==='he'?'✓ חיבור תקין! Gist נמצא ונגיש':'✓ Connection OK! Gist found and accessible';
+      el.textContent = lang==='he'?'✓ חיבור תקין! Google Sheets נגיש':'✓ Connection OK! Google Sheets accessible';
       showToast(lang==='he'?'חיבור תקין ✓':'Connection OK ✓');
-    } else {
-      el.style.color='var(--red)';
-      el.textContent = (lang==='he'?'✗ שגיאה: ':'✗ Error: ') + res.status + (res.status===401?' (טוקן שגוי)':res.status===404?' (Gist לא נמצא)':'');
-    }
+    } else throw new Error(json.error);
   } catch(e){
     el.style.color='var(--red)';
-    el.textContent = lang==='he'?'✗ שגיאת רשת':'✗ Network error';
+    el.textContent = (lang==='he'?'✗ שגיאה: ':'✗ Error: ') + e.message;
   }
 }
 
 async function forcePush(){
-  showToast(lang==='he'?'שולח ל-Gist...':'Pushing to Gist...');
-  await pushToGist();
+  showToast(lang==='he'?'שולח ל-Sheets...':'Pushing to Sheets...');
+  await pushToSheets();
   showToast(lang==='he'?'הועלה ✓':'Pushed ✓');
 }
 
 async function forcePull(){
-  showToast(lang==='he'?'מוריד מ-Gist...':'Pulling from Gist...');
-  const changed = await pullFromGist();
+  showToast(lang==='he'?'מוריד מ-Sheets...':'Pulling from Sheets...');
+  const changed = await pullFromSheets();
   if(changed){ wDraft=null; renderAll(); }
   showToast(lang==='he'?'הורד ✓':'Pulled ✓');
 }
-
-// Token field is loaded inside go() directly — no wrapper needed
 
 // ═══ INIT ═══
 (function(){
