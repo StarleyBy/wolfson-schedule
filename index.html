@@ -538,7 +538,7 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
   <div class="top">
     <div class="brand"><div class="bi">🫀</div><span class="bt">Wolfson Cardiac Surgery</span></div>
     <div class="tr">
-      <span id="sync-icon" title="sync">·</span>
+      <span id="sync-icon" title="sync" style="display:none">·</span>
       <button class="iconbtn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
       <button class="iconbtn" onclick="toggleLang()"><span class="he">EN</span><span class="en">HE</span></button>
       <div class="uch" onclick="openLO()"><div class="uav" id="t-av"></div><span class="unm" id="t-nm"></span></div>
@@ -779,6 +779,11 @@ function isSuperA(){return cu&&cu.role==='superadmin'}
 function isSecretary(){return cu&&cu.role==='secretary'}
 function isStaff(){return cu&&cu.role==='staff'}
 function isViewer(){return cu&&cu.role==='viewer'}
+// Только эти роли участвуют в дежурствах
+function isDutyRole(r){ return r==='doctor'||r==='admin'||r==='superadmin'; }
+function getDutyDocs(){ return getDocs().filter(d=>isDutyRole(d.role)); }
+// Get color index using position in full docs list (stable colors)
+function docColorIdx(docId){ return getDocs().findIndex(d=>d.id===docId); }
 function canSeeMonth(y,m){
   // viewer: all months (read-only)
   if(isViewer()) return true;
@@ -858,7 +863,7 @@ function initApp(){
     return;
   }
   // staff & secretary: no wishes nav
-  nav_w.style.display=(cu.role==='staff'||cu.role==='secretary')?'none':'flex';
+  nav_w.style.display=isDutyRole(cu.role)?'flex':'none';
   nav_c.style.display=isAdmin()?'flex':'none';
   nav_r.style.display=isSecretary()||isSuperA()?'flex':'none';
   nav_d.style.display=isSuperA()?'flex':'none';
@@ -928,7 +933,7 @@ function renderSched(){
 }
 
 function buildGrid(y,m,data,ed){
-  const docs=getDocs();
+  const docs=getDutyDocs();
   const dh=(lang==='he'?DHE:DEN).map((d,i)=>`<div class="dhdr${i===5?' fh':''}">${d}</div>`).join('');
   const first=new Date(y,m,1).getDay();
   const days=new Date(y,m+1,0).getDate();
@@ -969,7 +974,7 @@ function chipH(docs,docId,label,ed,onClick){
   if(label)o+=`<span class="slbl">${label}</span>`;
   if(docId!==undefined&&docId!==null){
     const doc=docs.find(d=>d.id===docId);
-    const idx=docs.findIndex(d=>d.id===docId);
+    const idx=docColorIdx(docId);
     if(doc){
       const oa=ed&&label?`onclick="${onClick}" style="cursor:pointer"`:'';
       o+=`<span class="chip ${docCls(idx)}" ${oa} title="${dn(doc)}">${shortName(doc)}</span>`;
@@ -1003,14 +1008,15 @@ function chipH_friAM(docs,docId,ed,onClick){
 }
 
 function renderLeg(){
-  const docs=getDocs();
-  document.getElementById('v-leg').innerHTML=docs.map((d,i)=>
-    `<div class="li"><div class="ldot chip ${docCls(i)}"></div><div style="font-size:13px;font-weight:700">${dn(d)}</div></div>`
-  ).join('');
+  const docs=getDutyDocs();
+  document.getElementById('v-leg').innerHTML=docs.map((d)=>{
+    const i=docColorIdx(d.id);
+    return`<div class="li"><div class="ldot chip ${docCls(i)}"></div><div style="font-size:13px;font-weight:700">${dn(d)}</div></div>`;
+  }).join('');
 }
 
 function renderStats(sc){
-  const docs=getDocs();
+  const docs=getDutyDocs();
   const cnt={};docs.forEach(d=>cnt[d.id]=0);
   Object.entries(sc).forEach(([k,v])=>{
     if(v!==undefined&&v!==null&&cnt[v]!==undefined){
@@ -1045,8 +1051,8 @@ function renderStats(sc){
 
 // ═══ WISHES ═══
 function renderWishDocSel(){
-  const docs=getDocs().filter(d=>d.role==='doctor'||d.role==='admin');
-  if(!isAdmin()){document.getElementById('w-doc-sel').style.display='none';return;}
+  const docs=getDutyDocs();
+  if(!isAdmin()||!isDutyRole(cu.role)){document.getElementById('w-doc-sel').style.display='none';return;}
   document.getElementById('w-doc-sel').style.display='block';
   document.getElementById('w-doc-pills').innerHTML=docs.map((d,i)=>{
     const idx=getDocs().findIndex(x=>x.id===d.id);
@@ -1062,7 +1068,7 @@ function selectWishDoc(id){
 }
 
 function renderWishes(reload){
-  if(!cu||cu.role==='staff'||cu.role==='secretary')return;
+  if(!cu||!isDutyRole(cu.role))return;
   // ensure wTargetDocId is valid
   if(!wTargetDocId) wTargetDocId=cu.id;
   // non-admin can only see own wishes
@@ -1128,7 +1134,7 @@ function selCM(y,m){cY=y;cM=m;const sv=getSched()[mk(y,m)];cD=sv?{...sv}:{};rend
 function renderCons(){
   buildCPills();
   document.getElementById('c-ttl').textContent=t(MHE[cM],MEN[cM])+' '+cY;
-  const docs=getDocs();
+  const docs=getDutyDocs();
   const cnt={};docs.forEach(d=>cnt[d.id]=0);
   Object.entries(cD).forEach(([k,v])=>{
     if(k.endsWith('_1')) return; // AM not counted as shift
@@ -1151,7 +1157,7 @@ function openDM(dk,type){
   if(type==='2')ttl+=' — '+t('אחרי 13:00','After 13:00');
   document.getElementById('dm-ttl').textContent=ttl;
   const allW=getWish(),wk=mk(y,m),unav=new Set();
-  const docs=getDocs();
+  const docs=getDutyDocs();
   docs.forEach(doc=>{if((allW[wk+'_'+doc.id]||[]).includes(d))unav.add(doc.id)});
   const sk=type==='1'?dk+'_1':type==='2'?dk+'_2':dk;
   const sel=cD[sk];
@@ -1194,7 +1200,7 @@ function selRptMonth(y,m){rptY=+y;rptM=+m;renderReports();}
 
 function renderReportContent(){
   const sc=getSched()[mk(rptY,rptM)]||{};
-  const docs=getDocs();
+  const docs=getDutyDocs();
   const monthName=t(MHE[rptM],MEN[rptM])+' '+rptY;
 
   if(rptActiveTab==='by-doc'){
@@ -1415,11 +1421,13 @@ function renderData(){
 
   // wishes summary
   const allW=getWish(),wk=mk(wY,wM);
-  document.getElementById('d-wish').innerHTML=docs.map((d,i)=>{
+  const dutyDocs=getDutyDocs();
+  document.getElementById('d-wish').innerHTML=dutyDocs.map((d)=>{
+    const i=getDocs().findIndex(x=>x.id===d.id);
     const days=(allW[wk+'_'+d.id]||[]).sort((a,b)=>a-b);
     return`<div class="wscard">
       <div class="wsrow">
-        <div class="dav" style="width:30px;height:30px;font-size:12px;background:${docBg(i)}22;color:${docBg(i)}">${dn(d)[0]}</div>
+        <div class="dav" style="width:30px;height:30px;font-size:12px;background:${docBg(i>=0?i:0)}22;color:${docBg(i>=0?i:0)}">${dn(d)[0]}</div>
         <div style="font-size:13px;font-weight:700">${dn(d)}</div>
       </div>
       <div class="wspills">${days.length?days.map(x=>`<span class="wsp">${x}</span>`).join(''):`<span class="wsp-none">${t('ללא מניעות','No restrictions')}</span>`}</div>
@@ -1523,7 +1531,7 @@ function exportPDF(){
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
   const sc=getSched()[mk(vY,vM)]||{};
-  const docs=getDocs();
+  const docs=getDutyDocs();
   const mn=MEN[vM];
   doc.setFont('helvetica','bold');doc.setFontSize(15);
   doc.text('Wolfson Cardiac Surgery — '+mn+' '+vY,14,13);
@@ -1596,6 +1604,8 @@ let pendingSync    = false;
 function showSyncStatus(state) {
   const el = document.getElementById('sync-icon');
   if (!el) return;
+  // never show for non-superadmin
+  if (!isSuperA()) { el.style.display='none'; return; }
   const labels = {
     syncing: { he:'מסנכרן...', en:'Syncing...',  color:'var(--yel)', icon:'↻', spin:true  },
     ok:      { he:'מסונכרן ✓', en:'Synced ✓',    color:'var(--grn)', icon:'✓', spin:false },
@@ -1603,7 +1613,8 @@ function showSyncStatus(state) {
     off:     { he:'לא מחובר',  en:'Offline',     color:'var(--t3)',  icon:'·', spin:false },
   };
   const s = labels[state] || labels.off;
-  el.title     = lang === 'he' ? s.he : s.en;
+  el.style.display    = 'inline-flex';
+  el.title            = lang === 'he' ? s.he : s.en;
   el.style.color      = s.color;
   el.textContent      = s.icon;
   el.style.animation  = s.spin ? 'spin 1s linear infinite' : 'none';
