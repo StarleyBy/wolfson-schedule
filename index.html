@@ -177,9 +177,9 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
 }
 .sgrid{
   display:grid;
-  grid-template-columns:repeat(7,minmax(46px,1fr));
+  grid-template-columns:repeat(7,minmax(50px,1fr));
   gap:2px;
-  min-width:322px; /* 7 × 46px = 322px — всегда видны все 7 дней */
+  min-width:350px; /* 7 × 50px */
   width:100%;
 }
 /* Day headers */
@@ -223,9 +223,10 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
 /* Doctor chips */
 .chip{
   display:block;border-radius:6px;
-  padding:4px 6px;font-size:12px;font-weight:800;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  padding:4px 5px;font-size:12px;font-weight:800;
+  white-space:nowrap;overflow:hidden;text-overflow:clip;
   max-width:100%;line-height:1.4;margin-bottom:3px;
+  text-align:center;
 }
 /* Friday AM label */
 .fri-am{
@@ -679,10 +680,11 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
   <div style="margin-bottom:14px">
     <span class="dlabel"><span class="he">תפקיד</span><span class="en">Role</span></span>
     <select class="fsel" id="de-role">
-      <option value="doctor"><span class="he">רופא / דז'ורנט</span><span class="en">Doctor / Duty</span></option>
+      <option value="doctor">Doctor / Duty</option>
       <option value="admin">Admin</option>
-      <option value="secretary"><span class="he">מזכירה</span><span class="en">Secretary</span></option>
-      <option value="staff"><span class="he">צוות</span><span class="en">Staff</span></option>
+      <option value="secretary">Secretary</option>
+      <option value="staff">Staff</option>
+      <option value="viewer">Viewer (read-only)</option>
     </select>
   </div>
   <div id="de-err" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none"></div>
@@ -713,14 +715,15 @@ const SK_DOCS='wf_docs_v2',SK_SCHED='wf_sched_v2',SK_WISH='wf_wish_v2',SK_VER='w
 // staff: только текущий и предыдущий месяц
 
 const DEFAULT_DOCTORS=[
-  {id:0, he:'צח',      en:'Tzach',  login:'tzach',  pass:'1111',   role:'admin'},
-  {id:1, he:'סרגיי',   en:'Sergey', login:'sergey', pass:'456755', role:'superadmin'},
-  {id:2, he:'אלכסיי',  en:'Alexei', login:'alexei', pass:'2222',   role:'doctor'},
-  {id:3, he:'מולו',    en:'Mulo',   login:'mulo',   pass:'3333',   role:'doctor'},
-  {id:4, he:'יאסר',    en:'Yasser', login:'yasser', pass:'4444',   role:'doctor'},
-  {id:5, he:"ז'נדו",   en:'Jandu',  login:'jandu',  pass:'5555',   role:'doctor'},
-  {id:6, he:'איבגניי', en:'Evgeny', login:'evgeny', pass:'6666',   role:'doctor'},
-  {id:7, he:'מועמן',   en:'Moaman', login:'moaman', pass:'7777',   role:'doctor'},
+  {id:0, he:'צח',      en:'Tzach',   login:'tzach',  pass:'1111',   role:'admin'},
+  {id:1, he:'סרגיי',   en:'Sergey',  login:'sergey', pass:'456755', role:'superadmin'},
+  {id:2, he:'אלכסיי',  en:'Alexei',  login:'alexei', pass:'2222',   role:'doctor'},
+  {id:3, he:'מולו',    en:'Mulo',    login:'mulo',   pass:'3333',   role:'doctor'},
+  {id:4, he:'יאסר',    en:'Yasser',  login:'yasser', pass:'4444',   role:'doctor'},
+  {id:5, he:"ז'נדו",   en:'Jandu',   login:'jandu',  pass:'5555',   role:'doctor'},
+  {id:6, he:'איבגניי', en:'Evgeny',  login:'evgeny', pass:'6666',   role:'doctor'},
+  {id:7, he:'מועמן',   en:'Moaman',  login:'moaman', pass:'7777',   role:'doctor'},
+  {id:8, he:'צופה',    en:'Viewer',  login:'login',  pass:'123456', role:'viewer'},
 ];
 
 function getDocs(){try{const d=JSON.parse(localStorage.getItem(SK_DOCS));return d&&d.length?d:DEFAULT_DOCTORS}catch{return DEFAULT_DOCTORS}}
@@ -775,7 +778,10 @@ function isAdmin(){return cu&&(cu.role==='admin'||cu.role==='superadmin')}
 function isSuperA(){return cu&&cu.role==='superadmin'}
 function isSecretary(){return cu&&cu.role==='secretary'}
 function isStaff(){return cu&&cu.role==='staff'}
+function isViewer(){return cu&&cu.role==='viewer'}
 function canSeeMonth(y,m){
+  // viewer: all months (read-only)
+  if(isViewer()) return true;
   // staff: only current and previous month
   if(isStaff()){
     const cur=new Date(today.getFullYear(),today.getMonth(),1);
@@ -843,6 +849,14 @@ function initApp(){
   const nav_c=document.getElementById('nav-c');
   const nav_r=document.getElementById('nav-r');
   const nav_d=document.getElementById('nav-d');
+  // viewer: only schedule
+  if(isViewer()){
+    nav_w.style.display='none';
+    nav_c.style.display='none';
+    nav_r.style.display='none';
+    nav_d.style.display='none';
+    return;
+  }
   // staff & secretary: no wishes nav
   nav_w.style.display=(cu.role==='staff'||cu.role==='secretary')?'none':'flex';
   nav_c.style.display=isAdmin()?'flex':'none';
@@ -864,6 +878,9 @@ function refreshTopbar(){
   const av=document.getElementById('t-av');
   av.textContent=n[0];
   av.style.background=docBg(cu._idx>=0?cu._idx:0);
+  // sync icon only for superadmin
+  const si=document.getElementById('sync-icon');
+  if(si) si.style.display=isSuperA()?'inline-flex':'none';
 }
 
 // ═══ NAV ═══
@@ -940,6 +957,13 @@ function buildGrid(y,m,data,ed){
   return dh+cells;
 }
 
+// Short display name: first word, max 6 chars
+function shortName(doc){
+  const n = dn(doc);
+  const first = n.split(' ')[0];
+  return first.length > 6 ? first.slice(0,5)+'.' : first;
+}
+
 function chipH(docs,docId,label,ed,onClick){
   let o='';
   if(label)o+=`<span class="slbl">${label}</span>`;
@@ -948,7 +972,7 @@ function chipH(docs,docId,label,ed,onClick){
     const idx=docs.findIndex(d=>d.id===docId);
     if(doc){
       const oa=ed&&label?`onclick="${onClick}" style="cursor:pointer"`:'';
-      o+=`<span class="chip ${docCls(idx)}" ${oa}>${dn(doc)}</span>`;
+      o+=`<span class="chip ${docCls(idx)}" ${oa} title="${dn(doc)}">${shortName(doc)}</span>`;
     }else o+=`<span class="chip ech">${t('—','—')}</span>`;
   }else{
     const oa=ed&&label?`onclick="${onClick}" style="cursor:pointer"`:'';
@@ -966,7 +990,7 @@ function chipH_friAM(docs,docId,ed,onClick){
     const idx=docs.findIndex(d=>d.id===docId);
     if(doc){
       const oa=ed?`onclick="${onClick}" style="cursor:pointer"`:'';
-      o+=`<span class="chip ${docCls(idx)}" style="opacity:.75;font-size:10px" ${oa}>${dn(doc)}</span>`;
+      o+=`<span class="chip ${docCls(idx)}" style="opacity:.75;font-size:10px" ${oa} title="${dn(doc)}">${shortName(doc)}</span>`;
     }else{
       const oa=ed?`onclick="${onClick}" style="cursor:pointer"`:'';
       o+=`<span class="chip ech" style="font-size:10px" ${oa}>${t('—','—')}</span>`;
@@ -1370,6 +1394,7 @@ function renderData(){
     if(r==='admin')return`<span class="badge adm">Admin</span>`;
     if(r==='secretary')return`<span class="badge sec">${t('מזכירה','Secretary')}</span>`;
     if(r==='staff')return`<span class="badge stf">${t('צוות','Staff')}</span>`;
+    if(r==='viewer')return`<span class="badge stf">${t('צופה','Viewer')}</span>`;
     return`<span class="badge">${t('רופא','Doctor')}</span>`;
   };
   document.getElementById('d-docs').innerHTML=docs.map((d,i)=>
@@ -1468,7 +1493,8 @@ function openLO(){
     cu.role==='superadmin'?t('סופר-אדמין','Superadmin'):
     cu.role==='admin'?'Admin':
     cu.role==='secretary'?t('מזכירה','Secretary'):
-    cu.role==='staff'?t('צוות','Staff'):t('רופא','Doctor');
+    cu.role==='staff'?t('צוות','Staff'):
+    cu.role==='viewer'?t('צופה','Viewer'):t('רופא','Doctor');
   document.getElementById('lo-login').textContent='@'+cu.login;
   document.getElementById('lo').classList.add('open');
 }
