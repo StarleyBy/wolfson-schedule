@@ -7,8 +7,9 @@ const ASSETS = [
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
 ];
 
-// Install event: cache assets
+// Install event: cache assets and force immediate update
 self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Force the waiting service worker to become the active service worker
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS);
@@ -16,8 +17,9 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate event: cleanup old caches
+// Activate event: cleanup old caches and take control immediately
 self.addEventListener('activate', (event) => {
+  self.clients.claim(); // Take control of all open clients immediately
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
