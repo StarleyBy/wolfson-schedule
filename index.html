@@ -1762,6 +1762,15 @@ async function forcePull(){
   // Pull из Gist при старте — получаем актуальные данные
   setTimeout(startAutoSync, 500);
 })();
+
+// ═══ SERVICE WORKER REGISTRATION ═══
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW registered!', reg))
+      .catch(err => console.log('SW registration failed: ', err));
+  });
+}
 </script>
 </body>
 </html>
