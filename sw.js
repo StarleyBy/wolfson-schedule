@@ -33,6 +33,9 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event: network-first strategy for index.html, cache-first for others
 self.addEventListener('fetch', (event) => {
+  // Ignore non-http/https requests (like chrome-extension://)
+  if (!(event.request.url.startsWith('http'))) return;
+
   const url = new URL(event.request.url);
 
   // For the main page, try network first to get updates, fallback to cache
