@@ -568,12 +568,18 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
     </div>
     <div style="margin-top:18px"><div class="stitle"><span class="he">אגדה</span><span class="en">Legend</span></div><div class="legend" id="v-leg"></div></div>
     <div style="margin-top:18px"><div class="stitle"><span class="he">סטטיסטיקות</span><span class="en">Statistics</span></div><div id="v-stats"></div></div>
+    <div style="margin-top:18px"><div class="stitle"><span class="he">סשנים החודש</span><span class="en">Sessions This Month</span></div><div id="v-sess"></div></div>
   </div>
 
   <!-- WISHES -->
   <div id="pg-wishes" class="page">
     <div class="stitle"><span class="he">מניעות לחודש הבא</span><span class="en">Unavailability — Next Month</span></div>
     <div class="ibox"><span class="ibox-i">ℹ️</span><span><span class="he">סמן ימים שאינך יכול לעבוד. רופא עם מניעה ביום לא יופיע ברשימה בעת בניית הגרפיק.</span><span class="en">Mark days you cannot work. A doctor marked unavailable won't appear in the list for that day in the builder.</span></span></div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="bsm pri" style="flex:1;padding:12px" onclick="openSM(true)">📝 <span class="he">בקשת סשן</span><span class="en">Request Session</span></button>
+      <button class="bsm pri" style="flex:1;padding:12px" onclick="openHM(true)">📝 <span class="he">בקשת חופש</span><span class="en">Request Day Off</span></button>
+    </div>
+    <div id="w-my-requests"></div>
     <!-- doctor selector for admin/superadmin -->
     <div id="w-doc-sel" style="display:none">
       <div class="stitle" style="font-size:12px;margin-bottom:8px"><span class="he">בחר רופא</span><span class="en">Select Doctor</span></div>
@@ -595,6 +601,24 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
     <div class="sgrid-wrap" style="margin-bottom:16px"><div id="c-grid" class="sgrid"></div></div>
     <button class="bs" onclick="saveCons()"><span class="he">📢 פרסום גרפיק</span><span class="en">📢 Publish Schedule</span></button>
     <button class="bd" onclick="clearCons()"><span class="he">🗑 ניקוי טיוטה</span><span class="en">🗑 Clear Draft</span></button>
+
+    <div class="sep"></div>
+    <div class="stitle" style="font-size:14px"><span class="he">סשנים וחופשות</span><span class="en">Sessions & Time Off</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="bsm pri" style="flex:1;padding:12px" onclick="openSM(false)">➕ <span class="he">סשן</span><span class="en">Session</span></button>
+      <button class="bsm pri" style="flex:1;padding:12px" onclick="openHM(false)">🏖 <span class="he">חופש/מחלה</span><span class="en">Day Off</span></button>
+    </div>
+
+    <div id="c-requests-wrap">
+      <div class="stitle" style="font-size:13px"><span class="he">בקשות ממתינות לאישור</span><span class="en">Pending Approval Requests</span></div>
+      <div id="c-requests" style="margin-bottom:16px"></div>
+    </div>
+
+    <div class="stitle" style="font-size:13px"><span class="he">סשנים החודש</span><span class="en">Sessions this month</span></div>
+    <div id="c-sess-list" style="margin-bottom:16px"></div>
+
+    <div class="stitle" style="font-size:13px"><span class="he">חופשות/מחלות החודש</span><span class="en">Time off this month</span></div>
+    <div id="c-toff-list"></div>
   </div>
 
   <!-- REPORTS (secretary) -->
@@ -604,10 +628,20 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
       <div class="rpt-tab ac" onclick="rptTab('by-doc',this)"><span class="he">לפי רופא</span><span class="en">By Doctor</span></div>
       <div class="rpt-tab" onclick="rptTab('all',this)"><span class="he">כל הרופאים</span><span class="en">All Doctors</span></div>
       <div class="rpt-tab" onclick="rptTab('summary',this)"><span class="he">סיכום</span><span class="en">Summary</span></div>
+      <div class="rpt-tab" onclick="rptTab('sessions',this)"><span class="he">סשנים</span><span class="en">Sessions</span></div>
     </div>
     <div class="rpt-month-sel" id="rpt-months"></div>
     <div id="rpt-content"></div>
     <button class="bpdf" onclick="exportReportPDF()" style="width:100%;justify-content:center;margin-top:4px">📄 <span class="he">ייצוא PDF</span><span class="en">Export PDF</span></button>
+  </div>
+
+  <!-- YEARLY DASHBOARD (secretary/superadmin) -->
+  <div id="pg-yearly" class="page" style="display:none">
+    <div class="stitle"><span class="he">דשבורד שנתי</span><span class="en">Yearly Dashboard</span></div>
+    <div class="ibox"><span class="ibox-i">📈</span><span><span class="he">סיכום שנתי לכל רופא: תורנויות, בוקר, סשנים, חופשות ומחלה.</span><span class="en">Yearly totals per doctor: shifts, AM, sessions, days off and sick leave.</span></span></div>
+    <div class="mpills" id="y-years"></div>
+    <div id="y-content"></div>
+    <button class="bpdf" onclick="exportYearlyPDF()" style="width:100%;justify-content:center;margin-top:4px">📄 <span class="he">ייצוא PDF</span><span class="en">Export PDF</span></button>
   </div>
 
   <!-- DATA (superadmin) -->
@@ -660,6 +694,7 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
     <button class="nv" id="nav-w" onclick="go('wishes',this)"><span class="ni">🙅</span><span class="he">מניעות</span><span class="en">Wishes</span></button>
     <button class="nv" id="nav-c" style="display:none" onclick="go('constr',this)"><span class="ni">🔧</span><span class="he">בנייה</span><span class="en">Builder</span></button>
     <button class="nv" id="nav-r" style="display:none" onclick="go('reports',this)"><span class="ni">📊</span><span class="he">דוחות</span><span class="en">Reports</span></button>
+    <button class="nv" id="nav-y" style="display:none" onclick="go('yearly',this)"><span class="ni">📈</span><span class="he">שנתי</span><span class="en">Yearly</span></button>
     <button class="nv" id="nav-d" style="display:none" onclick="go('data',this)"><span class="ni">⚙️</span><span class="he">ניהול</span><span class="en">Admin</span></button>
     <button class="nv" id="nav-cfg" style="display:none" onclick="go('settings',this)"><span class="ni">🔑</span><span class="he">סנכרון</span><span class="en">Sync</span></button>
   </div>
@@ -698,6 +733,32 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
   <button class="bs" onclick="saveDocEdit()" style="margin-bottom:8px"><span class="he">שמירה</span><span class="en">Save</span></button>
   <button class="bd" id="de-del" onclick="deleteDoc()" style="display:none"><span class="he">🗑 מחיקה</span><span class="en">🗑 Delete</span></button>
   <div class="mcanc" onclick="closeDE()"><span class="he">ביטול</span><span class="en">Cancel</span></div>
+</div></div>
+
+<!-- SESSION MODAL -->
+<div class="overlay" id="sm"><div class="msh">
+  <div class="mhdl"></div><div class="mtm" id="sm-ttl"></div>
+  <div class="fg"><span class="dlabel"><span class="he">תאריך</span><span class="en">Date</span></span><input class="finp" id="sm-date" type="date"></div>
+  <div class="fg"><span class="dlabel"><span class="he">מספר מקרה (לא חובה)</span><span class="en">Case Number (optional)</span></span><input class="finp" id="sm-case" type="text" dir="ltr" style="text-align:left"></div>
+  <div class="fg"><span class="dlabel"><span class="he">סוג ניתוח (לא חובה)</span><span class="en">Procedure (optional)</span></span><select class="fsel" id="sm-proc"></select></div>
+  <div class="fg">
+    <span class="dlabel"><span class="he">מוטבים (עד 2)</span><span class="en">Beneficiaries (up to 2)</span></span>
+    <div id="sm-benef" class="wdoc-sel"></div>
+  </div>
+  <div id="sm-err" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none"></div>
+  <button class="bs" onclick="saveSessionModal()" style="margin-bottom:8px"><span class="he">שמירה</span><span class="en">Save</span></button>
+  <div class="mcanc" onclick="closeSM()"><span class="he">ביטול</span><span class="en">Cancel</span></div>
+</div></div>
+
+<!-- TIME OFF / SICK MODAL -->
+<div class="overlay" id="hm"><div class="msh">
+  <div class="mhdl"></div><div class="mtm" id="hm-ttl"></div>
+  <div class="fg"><span class="dlabel"><span class="he">סוג</span><span class="en">Type</span></span><select class="fsel" id="hm-type"></select></div>
+  <div class="fg"><span class="dlabel"><span class="he">תאריך</span><span class="en">Date</span></span><input class="finp" id="hm-date" type="date"></div>
+  <div class="fg"><span class="dlabel"><span class="he">רופא</span><span class="en">Doctor</span></span><select class="fsel" id="hm-doc"></select></div>
+  <div id="hm-err" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none"></div>
+  <button class="bs" onclick="saveHMModal()" style="margin-bottom:8px"><span class="he">שמירה</span><span class="en">Save</span></button>
+  <div class="mcanc" onclick="closeHM()"><span class="he">ביטול</span><span class="en">Cancel</span></div>
 </div></div>
 
 <!-- LOGOUT -->
@@ -756,6 +817,32 @@ function setDocs(d)  { localStorage.setItem(SK_DOCS,  JSON.stringify(d)); schedu
 function setSched(d) { localStorage.setItem(SK_SCHED, JSON.stringify(d)); schedulePush(); }
 function setWish(d)  { localStorage.setItem(SK_WISH,  JSON.stringify(d)); schedulePush(); }
 function mk(y,m){return y+'-'+String(m+1).padStart(2,'0')}
+
+// ═══ SESSIONS / TIME-OFF / APPROVAL REQUESTS ═══
+const SK_SESS='wf_sess_v1', SK_TOFF='wf_toff_v1', SK_REQ='wf_req_v1';
+function getSess(){try{const d=JSON.parse(localStorage.getItem(SK_SESS));return Array.isArray(d)?d:[]}catch{return[]}}
+function getToff(){try{const d=JSON.parse(localStorage.getItem(SK_TOFF));return Array.isArray(d)?d:[]}catch{return[]}}
+function getReq(){try{const d=JSON.parse(localStorage.getItem(SK_REQ));return Array.isArray(d)?d:[]}catch{return[]}}
+function _saveSess(d){localStorage.setItem(SK_SESS,JSON.stringify(d));}
+function _saveToff(d){localStorage.setItem(SK_TOFF,JSON.stringify(d));}
+function _saveReq(d){localStorage.setItem(SK_REQ,JSON.stringify(d));}
+function setSess(d){localStorage.setItem(SK_SESS,JSON.stringify(d));schedulePush();}
+function setToff(d){localStorage.setItem(SK_TOFF,JSON.stringify(d));schedulePush();}
+function setReq(d){localStorage.setItem(SK_REQ,JSON.stringify(d));schedulePush();}
+
+// External (non-account) session beneficiaries
+const EXT_BENEF=[{id:'ext_hagi',he:'חגי',en:'Hagi',ext:true},{id:'ext_badir',he:'בדיר',en:'Badir',ext:true}];
+function getBenefPool(){ return getDutyDocs().concat(EXT_BENEF); }
+function findBenef(id){ return getBenefPool().find(p=>p.id===id); }
+
+function sameMonth(dateStr,y,m){ const d=new Date(dateStr+'T00:00:00'); return d.getFullYear()===y && d.getMonth()===m; }
+function sameYear(dateStr,y){ return new Date(dateStr+'T00:00:00').getFullYear()===y; }
+function countSessForDoc(docId,y,m){ return getSess().filter(s=>sameMonth(s.date,y,m)&&s.beneficiaries.includes(docId)).length; }
+function countToffForDoc(docId,y,m,type){ return getToff().filter(h=>sameMonth(h.date,y,m)&&h.docId===docId&&(type?h.type===type:true)).length; }
+function toffTypeLabel(type){
+  return type==='off'?t('חופש','Day Off'):type==='off_weekend'?t('חופש אחרי תורנות סופ״ש','Off after weekend duty'):t('מחלה','Sick Leave');
+}
+function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';}
 
 const DCLS=['c0','c1','c2','c3','c4','c5','c6','c7','c8','c9'];
 const DBGC=['#3b82f6','#10b981','#f59e0b','#ef4444','#a855f7','#ec4899','#14b8a6','#f97316','#6366f1','#eab308'];
@@ -860,12 +947,14 @@ function initApp(){
   const nav_w=document.getElementById('nav-w');
   const nav_c=document.getElementById('nav-c');
   const nav_r=document.getElementById('nav-r');
+  const nav_y=document.getElementById('nav-y');
   const nav_d=document.getElementById('nav-d');
   // viewer: only schedule
   if(isViewer()){
     nav_w.style.display='none';
     nav_c.style.display='none';
     nav_r.style.display='none';
+    nav_y.style.display='none';
     nav_d.style.display='none';
     return;
   }
@@ -873,9 +962,11 @@ function initApp(){
   nav_w.style.display=isDutyRole(cu.role)?'flex':'none';
   nav_c.style.display=isAdmin()?'flex':'none';
   nav_r.style.display=isSecretary()||isSuperA()?'flex':'none';
+  nav_y.style.display=isSecretary()||isSuperA()?'flex':'none';
   nav_d.style.display=isSuperA()?'flex':'none';
   if(isAdmin()) document.getElementById('pg-constr').style.display='';
   if(isSecretary()||isSuperA()) document.getElementById('pg-reports').style.display='';
+  if(isSecretary()||isSuperA()) document.getElementById('pg-yearly').style.display='';
   if(isSuperA()){
     document.getElementById('pg-data').style.display='';
     document.getElementById('pg-settings').style.display='';
@@ -903,6 +994,7 @@ function go(name,btn){
   if(btn)btn.classList.add('active');
   if(name==='wishes'){wDraft=null;renderWishes(true);}
   else if(name==='reports'){renderReports();}
+  else if(name==='yearly'){renderYearly();}
   else if(name==='settings'){renderAll();loadTokenField();}
   else renderAll();
 }
@@ -916,6 +1008,7 @@ function renderAll(){
   if(cu.role!=='staff'&&cu.role!=='secretary') renderWishes(false);
   if(isAdmin()) renderCons();
   if(isSecretary()||isSuperA()) renderReports();
+  if(isSecretary()||isSuperA()) renderYearly();
   if(isSuperA()) renderData();
 }
 
@@ -933,7 +1026,7 @@ function renderSched(){
   const sc=getSched()[key]||{};
   document.getElementById('v-ttl').textContent=t(MHE[vM],MEN[vM])+' '+vY;
   document.getElementById('v-grid').innerHTML=buildGrid(vY,vM,sc,false);
-  renderLeg(); renderStats(sc);
+  renderLeg(); renderStats(sc); renderSessSummary();
   // Show scroll hint on narrow screens
   const hint = document.getElementById('scroll-hint');
   if(hint) hint.style.display = window.innerWidth < 420 ? 'block' : 'none';
@@ -1046,14 +1139,27 @@ function renderStats(sc){
     </div>
     <div class="dsg2">${docs.map((d,i)=>{
       const am=cntAM[d.id]||0;
+      const sess=countSessForDoc(d.id,vY,vM);
+      const off=countToffForDoc(d.id,vY,vM,'off')+countToffForDoc(d.id,vY,vM,'off_weekend');
+      const sick=countToffForDoc(d.id,vY,vM,'sick');
       return`<div class="dsg" style="flex-direction:column;align-items:flex-start;gap:4px">
         <span class="chip ${docCls(i)}" style="font-size:11px;padding:3px 8px">${dn(d)}</span>
         <div style="display:flex;gap:8px;width:100%">
           <span style="font-size:13px;font-weight:900;color:var(--t2)">${cnt[d.id]||0} ${t('תורנות','shifts')}</span>
           ${am?`<span style="font-size:11px;color:var(--t3)">+ ${am} ${t('בוקר','AM')}</span>`:''}
         </div>
+        <div style="font-size:11px;color:var(--t3)">${t('סשנים','Sessions')}: ${sess} · ${t('חופש','Off')}: ${off} · ${t('מחלה','Sick')}: ${sick}</div>
       </div>`;
     }).join('')}</div>`;
+}
+
+function renderSessSummary(){
+  const el=document.getElementById('v-sess'); if(!el)return;
+  const list=getSess().filter(s=>sameMonth(s.date,vY,vM)).sort((a,b)=>a.date.localeCompare(b.date));
+  el.innerHTML=list.length?list.map(s=>{
+    const benNames=s.beneficiaries.map(id=>{const b=findBenef(id);return b?dn(b):id}).join(', ');
+    return `<div class="wscard"><div style="font-size:13px;font-weight:700">${s.date}${s.caseNo?' · #'+s.caseNo:''}</div><div style="font-size:12px;color:var(--t2)">${s.procedure||'—'} · ${benNames}</div></div>`;
+  }).join(''):`<div style="color:var(--t3);font-size:12px;padding:6px 0">${t('אין סשנים החודש','No sessions this month')}</div>`;
 }
 
 // ═══ WISHES ═══
@@ -1082,6 +1188,7 @@ function renderWishes(reload){
   if(!isAdmin()) wTargetDocId=cu.id;
 
   renderWishDocSel();
+  renderMyRequests();
 
   document.getElementById('w-ttl').textContent=t(MHE[wM],MEN[wM])+' '+wY;
 
@@ -1151,6 +1258,9 @@ function renderCons(){
     `<div class="ctc ${docCls(i)}"><span>${dn(d)}</span><span class="ctn">${cnt[d.id]||0}</span></div>`
   ).join('');
   document.getElementById('c-grid').innerHTML=buildGrid(cY,cM,cD,true);
+  renderRequests();
+  renderCSessList();
+  renderCToffList();
 }
 function saveCons(){const key=mk(cY,cM),all=getSched();all[key]={...cD};setSched(all);showToast(t('גרפיק פורסם ✓','Published ✓'));renderAll();}
 function clearCons(){if(!confirm(t('לנקות את הטיוטה?','Clear draft?')))return;cD={};renderCons();}
@@ -1181,6 +1291,268 @@ function openDM(dk,type){
 function pickD(id){if(!mt)return;const k=mt.type==='1'?mt.dk+'_1':mt.type==='2'?mt.dk+'_2':mt.dk;cD[k]=id;closeDM();renderCons();}
 function clrCell(){if(!mt)return;const k=mt.type==='1'?mt.dk+'_1':mt.type==='2'?mt.dk+'_2':mt.dk;delete cD[k];closeDM();renderCons();}
 function closeDM(){document.getElementById('dm').classList.remove('open')}
+
+// ═══ SESSION MODAL ═══
+let smForRequest=false, smBenefSel=new Set();
+function openSM(forRequest){
+  smForRequest=!!forRequest;
+  document.getElementById('sm-ttl').textContent = forRequest
+    ? t('בקשת סשן (טעון אישור אדמין)','Request Session (needs admin approval)')
+    : t('הוספת סשן','Add Session');
+  document.getElementById('sm-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('sm-case').value='';
+  const procSel=document.getElementById('sm-proc');
+  procSel.innerHTML=`<option value="">—</option><option value="CABG">CABG</option><option value="Valve">Valve</option><option value="CABG+Valve">CABG+Valve</option><option value="Other">${t('אחר','Other')}</option>`;
+  procSel.value='';
+  smBenefSel=new Set(forRequest?[cu.id]:[]);
+  renderSMBenef();
+  document.getElementById('sm-err').style.display='none';
+  document.getElementById('sm').classList.add('open');
+}
+function renderSMBenef(){
+  const pool=getBenefPool();
+  document.getElementById('sm-benef').innerHTML=pool.map(p=>{
+    const on=smBenefSel.has(p.id);
+    return `<div class="wdoc-pill" style="background:${on?'var(--acc)':'var(--s2)'};border-color:${on?'var(--acc)':'var(--brd)'};color:${on?'#fff':'var(--t2)'}" onclick="toggleSMBenef('${p.id}')">${dn(p)}</div>`;
+  }).join('');
+}
+function toggleSMBenef(id){
+  if(smBenefSel.has(id)){smBenefSel.delete(id);}
+  else{
+    if(smBenefSel.size>=2){showToast(t('ניתן לבחור עד 2 מוטבים','Max 2 beneficiaries allowed'),'err');return;}
+    smBenefSel.add(id);
+  }
+  renderSMBenef();
+}
+function closeSM(){document.getElementById('sm').classList.remove('open')}
+function saveSessionModal(){
+  const date=document.getElementById('sm-date').value;
+  if(!date){showErr('sm-err',t('נא לבחור תאריך','Please select a date'));return;}
+  if(smBenefSel.size===0){showErr('sm-err',t('נא לבחור לפחות מוטב אחד','Select at least one beneficiary'));return;}
+  document.getElementById('sm-err').style.display='none';
+  const rec={
+    id:'s'+Date.now()+Math.random().toString(36).slice(2,7),
+    date, caseNo:document.getElementById('sm-case').value.trim(),
+    procedure:document.getElementById('sm-proc').value,
+    beneficiaries:Array.from(smBenefSel),
+    createdBy:cu.id, createdAt:Date.now()
+  };
+  if(smForRequest){
+    const reqs=getReq();
+    reqs.push({id:'r'+Date.now()+Math.random().toString(36).slice(2,5),kind:'session',payload:rec,docId:cu.id,status:'pending',createdAt:Date.now()});
+    setReq(reqs);
+    showToast(t('הבקשה נשלחה לאישור ✓','Request sent for approval ✓'));
+  } else {
+    const s=getSess(); s.push(rec); setSess(s);
+    showToast(t('סשן נוסף ✓','Session added ✓'));
+  }
+  closeSM();
+  renderAll();
+}
+
+// ═══ TIME-OFF / SICK MODAL ═══
+let hmForRequest=false;
+function openHM(forRequest){
+  hmForRequest=!!forRequest;
+  document.getElementById('hm-ttl').textContent = forRequest
+    ? t('בקשת חופש/מחלה (טעון אישור אדמין)','Request Day Off/Sick (needs admin approval)')
+    : t('הוספת חופש/מחלה','Add Day Off/Sick');
+  document.getElementById('hm-type').innerHTML=
+    `<option value="off">${t('יום חופש','Day Off')}</option>`+
+    `<option value="off_weekend">${t('חופש אחרי תורנות סופ״ש','Off after weekend duty')}</option>`+
+    `<option value="sick">${t('מחלה','Sick Leave')}</option>`;
+  document.getElementById('hm-date').value=new Date().toISOString().slice(0,10);
+  const docSel=document.getElementById('hm-doc');
+  if(forRequest){
+    docSel.innerHTML=`<option value="${cu.id}">${dn(cu)}</option>`;
+    docSel.disabled=true;
+  } else {
+    docSel.disabled=false;
+    docSel.innerHTML=getDutyDocs().map(d=>`<option value="${d.id}">${dn(d)}</option>`).join('');
+  }
+  document.getElementById('hm-err').style.display='none';
+  document.getElementById('hm').classList.add('open');
+}
+function closeHM(){document.getElementById('hm').classList.remove('open')}
+function saveHMModal(){
+  const date=document.getElementById('hm-date').value;
+  if(!date){showErr('hm-err',t('נא לבחור תאריך','Please select a date'));return;}
+  document.getElementById('hm-err').style.display='none';
+  const docId=+document.getElementById('hm-doc').value;
+  const type=document.getElementById('hm-type').value;
+  const rec={id:'h'+Date.now()+Math.random().toString(36).slice(2,7),type,date,docId,createdBy:cu.id,createdAt:Date.now()};
+  if(hmForRequest){
+    const reqs=getReq();
+    reqs.push({id:'r'+Date.now()+Math.random().toString(36).slice(2,5),kind:'timeoff',payload:rec,docId:cu.id,status:'pending',createdAt:Date.now()});
+    setReq(reqs);
+    showToast(t('הבקשה נשלחה לאישור ✓','Request sent for approval ✓'));
+  } else {
+    const h=getToff(); h.push(rec); setToff(h);
+    showToast(t('נוסף ✓','Added ✓'));
+  }
+  closeHM();
+  renderAll();
+}
+
+// ═══ REQUEST APPROVAL (admin/superadmin) ═══
+function renderRequests(){
+  const el=document.getElementById('c-requests'); if(!el||!isAdmin())return;
+  const reqs=getReq().filter(r=>r.status==='pending');
+  if(!reqs.length){el.innerHTML=`<div style="color:var(--t3);font-size:12px;padding:8px 0">${t('אין בקשות ממתינות','No pending requests')}</div>`;return;}
+  el.innerHTML=reqs.map(r=>{
+    const doc=getDocs().find(d=>d.id===r.docId);
+    let desc='';
+    if(r.kind==='session'){
+      const benNames=r.payload.beneficiaries.map(id=>{const b=findBenef(id);return b?dn(b):id}).join(', ');
+      desc=`${t('סשן','Session')} · ${r.payload.date}${r.payload.caseNo?' · #'+r.payload.caseNo:''} · ${r.payload.procedure||'—'} · ${benNames}`;
+    } else {
+      desc=`${toffTypeLabel(r.payload.type)} · ${r.payload.date}`;
+    }
+    return `<div class="wscard">
+      <div class="wsrow"><div style="font-size:13px;font-weight:700">${doc?dn(doc):'?'}</div></div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:8px">${desc}</div>
+      <div style="display:flex;gap:8px">
+        <button class="bsm pri" style="flex:1" onclick="approveReq('${r.id}')">${t('✓ אישור','✓ Approve')}</button>
+        <button class="bsm dan" style="flex:1" onclick="rejectReq('${r.id}')">${t('✗ דחייה','✗ Reject')}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function approveReq(id){
+  const reqs=getReq();const idx=reqs.findIndex(r=>r.id===id);if(idx<0)return;
+  const r=reqs[idx];
+  if(r.kind==='session'){const s=getSess();s.push(r.payload);setSess(s);}
+  else{const h=getToff();h.push(r.payload);setToff(h);}
+  reqs.splice(idx,1);setReq(reqs);
+  showToast(t('אושר ✓','Approved ✓'));
+  renderAll();
+}
+function rejectReq(id){
+  const reqs=getReq();const idx=reqs.findIndex(r=>r.id===id);if(idx<0)return;
+  reqs.splice(idx,1);setReq(reqs);
+  showToast(t('נדחה','Rejected'));
+  renderAll();
+}
+function renderMyRequests(){
+  const el=document.getElementById('w-my-requests'); if(!el||!cu)return;
+  const mine=getReq().filter(r=>r.docId===cu.id);
+  if(!mine.length){el.innerHTML='';return;}
+  el.innerHTML=`<div class="stitle" style="font-size:12px">${t('הבקשות שלי','My Requests')}</div>`+mine.map(r=>{
+    const desc=r.kind==='session'?(t('סשן','Session')+' · '+r.payload.date):(r.payload.date+' · '+toffTypeLabel(r.payload.type));
+    const statusColor=r.status==='pending'?'var(--yel)':r.status==='approved'?'var(--grn)':'var(--red)';
+    const statusLbl=r.status==='pending'?t('ממתין','Pending'):r.status==='approved'?t('אושר','Approved'):t('נדחה','Rejected');
+    return `<div class="wscard" style="display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:12px">${desc}</span>
+      <span style="font-size:11px;color:${statusColor};font-weight:700">${statusLbl}</span>
+    </div>`;
+  }).join('');
+}
+
+// ═══ SESSIONS / TIME-OFF LISTS (Builder page) ═══
+function renderCSessList(){
+  const el=document.getElementById('c-sess-list'); if(!el)return;
+  const list=getSess().filter(s=>sameMonth(s.date,cY,cM)).sort((a,b)=>a.date.localeCompare(b.date));
+  el.innerHTML=list.length?list.map(s=>{
+    const benNames=s.beneficiaries.map(id=>{const b=findBenef(id);return b?dn(b):id}).join(', ');
+    return `<div class="wscard"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <div>
+        <div style="font-size:13px;font-weight:700">${s.date}${s.caseNo?' · #'+s.caseNo:''}</div>
+        <div style="font-size:12px;color:var(--t2)">${s.procedure||'—'} · ${benNames}</div>
+      </div>
+      <button class="iconbtn" onclick="deleteSess('${s.id}')" title="${t('מחיקה','Delete')}">🗑</button>
+    </div></div>`;
+  }).join(''):`<div style="color:var(--t3);font-size:12px;padding:6px 0">${t('אין סשנים החודש','No sessions this month')}</div>`;
+}
+function deleteSess(id){
+  if(!confirm(t('למחוק סשן זה?','Delete this session?')))return;
+  setSess(getSess().filter(s=>s.id!==id));
+  showToast(t('נמחק','Deleted'));renderAll();
+}
+function renderCToffList(){
+  const el=document.getElementById('c-toff-list'); if(!el)return;
+  const list=getToff().filter(h=>sameMonth(h.date,cY,cM)).sort((a,b)=>a.date.localeCompare(b.date));
+  el.innerHTML=list.length?list.map(h=>{
+    const doc=getDocs().find(d=>d.id===h.docId);
+    return `<div class="wscard"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <div>
+        <div style="font-size:13px;font-weight:700">${h.date}</div>
+        <div style="font-size:12px;color:var(--t2)">${doc?dn(doc):'?'} · ${toffTypeLabel(h.type)}</div>
+      </div>
+      <button class="iconbtn" onclick="deleteToff('${h.id}')" title="${t('מחיקה','Delete')}">🗑</button>
+    </div></div>`;
+  }).join(''):`<div style="color:var(--t3);font-size:12px;padding:6px 0">${t('אין רשומות החודש','No records this month')}</div>`;
+}
+function deleteToff(id){
+  if(!confirm(t('למחוק רשומה זו?','Delete this record?')))return;
+  setToff(getToff().filter(h=>h.id!==id));
+  showToast(t('נמחק','Deleted'));renderAll();
+}
+
+// ═══ YEARLY DASHBOARD ═══
+let yYear=today.getFullYear();
+function renderYearly(){
+  const years=new Set([today.getFullYear()]);
+  Object.keys(getSched()).forEach(k=>years.add(+k.split('-')[0]));
+  getSess().forEach(s=>years.add(new Date(s.date+'T00:00:00').getFullYear()));
+  getToff().forEach(h=>years.add(new Date(h.date+'T00:00:00').getFullYear()));
+  const sorted=Array.from(years).sort((a,b)=>b-a);
+  const yEl=document.getElementById('y-years'); if(!yEl)return;
+  yEl.innerHTML=sorted.map(y=>`<div class="mpill ${y===yYear?'ac':''}" onclick="selYear(${y})">${y}</div>`).join('');
+
+  const docs=getDutyDocs(), sc=getSched();
+  let h=`<table class="rtable"><thead><tr>
+    <th>${t('רופא','Doctor')}</th><th>${t('תורנויות','Shifts')}</th><th>${t('בוקר','AM')}</th>
+    <th>${t('סשנים','Sessions')}</th><th>${t('חופשות','Off')}</th><th>${t('מחלה','Sick')}</th>
+  </tr></thead><tbody>`;
+  docs.forEach((d,i)=>{
+    let shifts=0,am=0;
+    for(let m=0;m<12;m++){
+      const monthSc=sc[mk(yYear,m)]; if(!monthSc)continue;
+      Object.entries(monthSc).forEach(([k,v])=>{
+        if(v!==d.id)return;
+        if(k.endsWith('_1'))am++; else shifts++;
+      });
+    }
+    const sess=getSess().filter(s=>sameYear(s.date,yYear)&&s.beneficiaries.includes(d.id)).length;
+    const off=getToff().filter(x=>sameYear(x.date,yYear)&&x.docId===d.id&&(x.type==='off'||x.type==='off_weekend')).length;
+    const sick=getToff().filter(x=>sameYear(x.date,yYear)&&x.docId===d.id&&x.type==='sick').length;
+    h+=`<tr><td><div style="display:flex;align-items:center;gap:7px">
+      <div class="dav" style="width:28px;height:28px;font-size:11px;background:${docBg(i)}22;color:${docBg(i)}">${dn(d)[0]}</div>
+      <span style="font-weight:600;font-size:12px">${dn(d)}</span></div></td>
+      <td class="num">${shifts}</td><td>${am}</td><td>${sess}</td><td>${off}</td><td>${sick}</td></tr>`;
+  });
+  h+='</tbody></table>';
+  document.getElementById('y-content').innerHTML=h;
+}
+function selYear(y){yYear=+y;renderYearly();}
+function exportYearlyPDF(){
+  if(!window.jspdf){showToast('jsPDF not loaded','err');return}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const docs=getDutyDocs(), sc=getSched();
+  doc.setFont('helvetica','bold');doc.setFontSize(14);
+  doc.text('Wolfson Cardiac — Yearly Dashboard '+yYear,14,14);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(130,130,130);
+  doc.text('Generated: '+new Date().toLocaleDateString('en-GB'),14,20);doc.setTextColor(0,0,0);
+  let y=30;
+  doc.setFont('helvetica','bold');doc.setFontSize(9);
+  doc.text('Doctor',14,y);doc.text('Shifts',80,y);doc.text('AM',105,y);doc.text('Sessions',125,y);doc.text('Off',155,y);doc.text('Sick',175,y);
+  y+=6;doc.setFont('helvetica','normal');
+  docs.forEach(d=>{
+    let shifts=0,am=0;
+    for(let m=0;m<12;m++){
+      const monthSc=sc[mk(yYear,m)]; if(!monthSc)continue;
+      Object.entries(monthSc).forEach(([k,v])=>{if(v!==d.id)return;if(k.endsWith('_1'))am++;else shifts++;});
+    }
+    const sess=getSess().filter(s=>sameYear(s.date,yYear)&&s.beneficiaries.includes(d.id)).length;
+    const off=getToff().filter(x=>sameYear(x.date,yYear)&&x.docId===d.id&&(x.type==='off'||x.type==='off_weekend')).length;
+    const sick=getToff().filter(x=>sameYear(x.date,yYear)&&x.docId===d.id&&x.type==='sick').length;
+    doc.text(d.en,14,y);doc.text(String(shifts),80,y);doc.text(String(am),105,y);doc.text(String(sess),125,y);doc.text(String(off),155,y);doc.text(String(sick),175,y);
+    y+=6;if(y>270){doc.addPage();y=20;}
+  });
+  doc.save('Wolfson_Yearly_'+yYear+'.pdf');
+  showToast(t('PDF הורד ✓','PDF downloaded ✓'));
+}
 
 // ═══ REPORTS ═══
 function rptTab(tab,btn){
@@ -1214,9 +1586,39 @@ function renderReportContent(){
     renderRptByDoc(sc,docs,monthName);
   } else if(rptActiveTab==='all'){
     renderRptAll(sc,docs,monthName);
+  } else if(rptActiveTab==='sessions'){
+    renderRptSessions(sc,docs,monthName);
   } else {
     renderRptSummary(sc,docs,monthName);
   }
+}
+
+function renderRptSessions(sc,docs,monthName){
+  const list=getSess().filter(s=>sameMonth(s.date,rptY,rptM)).sort((a,b)=>a.date.localeCompare(b.date));
+  const toffList=getToff().filter(h=>sameMonth(h.date,rptY,rptM)).sort((a,b)=>a.date.localeCompare(b.date));
+  let h=`<div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--t2)">${monthName} · ${list.length} ${t('סשנים','sessions')}</div>`;
+  if(list.length){
+    h+=`<table class="rtable"><thead><tr><th>${t('תאריך','Date')}</th><th>${t('מקרה','Case')}</th><th>${t('ניתוח','Procedure')}</th><th>${t('מוטבים','Beneficiaries')}</th></tr></thead><tbody>`;
+    list.forEach(s=>{
+      const benNames=s.beneficiaries.map(id=>{const b=findBenef(id);return b?dn(b):id}).join(', ');
+      h+=`<tr><td class="date-cell">${s.date}</td><td>${s.caseNo||'—'}</td><td>${s.procedure||'—'}</td><td>${benNames}</td></tr>`;
+    });
+    h+='</tbody></table>';
+  } else {
+    h+=`<div style="color:var(--t3);font-size:13px;padding:16px 0;text-align:center">${t('אין סשנים בחודש זה','No sessions this month')}</div>`;
+  }
+  h+=`<div style="font-size:13px;font-weight:700;margin:18px 0 12px;color:var(--t2)">${t('חופשות ומחלה','Time off & sick leave')}</div>`;
+  if(toffList.length){
+    h+=`<table class="rtable"><thead><tr><th>${t('תאריך','Date')}</th><th>${t('רופא','Doctor')}</th><th>${t('סוג','Type')}</th></tr></thead><tbody>`;
+    toffList.forEach(x=>{
+      const doc=getDocs().find(d=>d.id===x.docId);
+      h+=`<tr><td class="date-cell">${x.date}</td><td>${doc?dn(doc):'?'}</td><td>${toffTypeLabel(x.type)}</td></tr>`;
+    });
+    h+='</tbody></table>';
+  } else {
+    h+=`<div style="color:var(--t3);font-size:13px;padding:16px 0;text-align:center">${t('אין רשומות בחודש זה','No records this month')}</div>`;
+  }
+  document.getElementById('rpt-content').innerHTML=h;
 }
 
 function getShiftsForDoc(sc,docId,y,m){
@@ -1288,6 +1690,19 @@ function renderRptByDoc(sc,docs,monthName){
   } else {
     h+=`<div style="color:var(--t3);font-size:13px;padding:16px 0;text-align:center">${t('אין תורנויות בחודש זה','No shifts this month')}</div>`;
   }
+
+  // Sessions & time-off for this doctor this month
+  const docSess=getSess().filter(s=>sameMonth(s.date,rptY,rptM)&&s.beneficiaries.includes(docId)).sort((a,b)=>a.date.localeCompare(b.date));
+  const docToff=getToff().filter(x=>sameMonth(x.date,rptY,rptM)&&x.docId===docId).sort((a,b)=>a.date.localeCompare(b.date));
+  h+=`<div style="font-size:13px;font-weight:700;margin:18px 0 10px;color:var(--t2)">${t('סשנים','Sessions')} (${docSess.length})</div>`;
+  h+=docSess.length?`<table class="rtable"><thead><tr><th>${t('תאריך','Date')}</th><th>${t('מקרה','Case')}</th><th>${t('ניתוח','Procedure')}</th></tr></thead><tbody>${
+    docSess.map(s=>`<tr><td class="date-cell">${s.date}</td><td>${s.caseNo||'—'}</td><td>${s.procedure||'—'}</td></tr>`).join('')
+  }</tbody></table>`:`<div style="color:var(--t3);font-size:12px;padding:6px 0">${t('אין סשנים','None')}</div>`;
+  h+=`<div style="font-size:13px;font-weight:700;margin:14px 0 10px;color:var(--t2)">${t('חופשות ומחלה','Time off & sick')} (${docToff.length})</div>`;
+  h+=docToff.length?`<table class="rtable"><thead><tr><th>${t('תאריך','Date')}</th><th>${t('סוג','Type')}</th></tr></thead><tbody>${
+    docToff.map(x=>`<tr><td class="date-cell">${x.date}</td><td>${toffTypeLabel(x.type)}</td></tr>`).join('')
+  }</tbody></table>`:`<div style="color:var(--t3);font-size:12px;padding:6px 0">${t('אין רשומות','None')}</div>`;
+
   document.getElementById('rpt-content').innerHTML=h;
 }
 
@@ -1337,6 +1752,9 @@ function renderRptSummary(sc,docs,monthName){
     <th>${t('אחוז','%')}</th>
     <th>${t('ימים ראשון','1st Shift')}</th>
     <th>${t('ימים שישי','Fri Shifts')}</th>
+    <th>${t('סשנים','Sessions')}</th>
+    <th>${t('חופש','Off')}</th>
+    <th>${t('מחלה','Sick')}</th>
   </tr></thead><tbody>`;
 
   const sorted=[...docs].sort((a,b)=>(cnt[b.id]||0)-(cnt[a.id]||0));
@@ -1346,6 +1764,9 @@ function renderRptSummary(sc,docs,monthName){
     const regCnt=shifts.length-friCnt;
     const pct=total>0?Math.round((shifts.length/total)*100):0;
     const idx=docs.findIndex(x=>x.id===d.id);
+    const sess=countSessForDoc(d.id,rptY,rptM);
+    const off=countToffForDoc(d.id,rptY,rptM,'off')+countToffForDoc(d.id,rptY,rptM,'off_weekend');
+    const sick=countToffForDoc(d.id,rptY,rptM,'sick');
     h+=`<tr>
       <td><div style="display:flex;align-items:center;gap:7px">
         <div class="dav" style="width:28px;height:28px;font-size:11px;background:${docBg(idx)}22;color:${docBg(idx)};flex-shrink:0">${dn(d)[0]}</div>
@@ -1355,6 +1776,9 @@ function renderRptSummary(sc,docs,monthName){
       <td>${pct}%</td>
       <td>${regCnt}</td>
       <td>${friCnt?`<span style="color:var(--pur2);font-weight:700">${friCnt}</span>`:0}</td>
+      <td>${sess}</td>
+      <td>${off}</td>
+      <td>${sick}</td>
     </tr>`;
   });
   h+='</tbody></table>';
@@ -1394,6 +1818,33 @@ function exportReportPDF(){
     y+=3;
     if(y>270){doc.addPage();y=20;}
   });
+
+  // Sessions section
+  const sess=getSess().filter(s=>sameMonth(s.date,rptY,rptM)).sort((a,b)=>a.date.localeCompare(b.date));
+  if(sess.length){
+    y+=4; if(y>260){doc.addPage();y=20;}
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('Sessions',14,y);y+=6;
+    doc.setFont('helvetica','normal');doc.setFontSize(8);
+    sess.forEach((s,si)=>{
+      const ben=s.beneficiaries.map(id=>{const b=findBenef(id);return b?b.en:id}).join(', ');
+      doc.text((si+1)+'. '+s.date+(s.caseNo?' #'+s.caseNo:'')+' — '+(s.procedure||'-')+' — '+ben,20,y);
+      y+=5; if(y>270){doc.addPage();y=20;}
+    });
+  }
+
+  // Time off / sick section
+  const toff=getToff().filter(h=>sameMonth(h.date,rptY,rptM)).sort((a,b)=>a.date.localeCompare(b.date));
+  if(toff.length){
+    y+=4; if(y>260){doc.addPage();y=20;}
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('Time off & sick leave',14,y);y+=6;
+    doc.setFont('helvetica','normal');doc.setFontSize(8);
+    toff.forEach((h,hi)=>{
+      const dd=docs.find(x=>x.id===h.docId);
+      doc.text((hi+1)+'. '+h.date+' — '+(dd?dd.en:'?')+' — '+h.type,20,y);
+      y+=5; if(y>270){doc.addPage();y=20;}
+    });
+  }
+
   doc.save('Report_Wolfson_'+MEN[rptM]+'_'+rptY+'.pdf');
   showToast(t('PDF הורד ✓','PDF downloaded ✓'));
 }
@@ -1526,9 +1977,12 @@ function doLogout(){
   document.getElementById('pg-schedule').classList.add('active');
 }
 
-['dm','de','lo'].forEach(id=>{
+['dm','de','lo','sm','hm'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){
-    if(e.target===this){if(id==='dm')closeDM();if(id==='de')closeDE();if(id==='lo')closeLO();}
+    if(e.target===this){
+      if(id==='dm')closeDM();if(id==='de')closeDE();if(id==='lo')closeLO();
+      if(id==='sm')closeSM();if(id==='hm')closeHM();
+    }
   });
 });
 
@@ -1642,6 +2096,9 @@ async function pullFromSheets() {
     if (remote.docs   && remote.docs.length)                { _saveDocs(remote.docs);   changed = true; }
     if (remote.sched  && Object.keys(remote.sched).length)  { _saveSched(remote.sched); changed = true; }
     if (remote.wishes && Object.keys(remote.wishes).length) { _saveWish(remote.wishes); changed = true; }
+    if (remote.sessions && remote.sessions.length)          { _saveSess(remote.sessions); changed = true; }
+    if (remote.timeoff  && remote.timeoff.length)           { _saveToff(remote.timeoff);  changed = true; }
+    if (remote.requests !== undefined)                      { _saveReq(remote.requests||[]); changed = true; }
 
     showSyncStatus('ok');
     return changed;
@@ -1661,9 +2118,12 @@ async function pushToSheets() {
     const payload = {
       action: 'setAll',
       data: {
-        docs:   getDocs(),
-        sched:  getSched(),
-        wishes: getWish(),
+        docs:     getDocs(),
+        sched:    getSched(),
+        wishes:   getWish(),
+        sessions: getSess(),
+        timeoff:  getToff(),
+        requests: getReq(),
       }
     };
     const res = await fetch(GS_URL, {
