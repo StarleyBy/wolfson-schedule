@@ -289,16 +289,39 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
 }
 .ldot{width:28px;height:20px;border-radius:5px;flex-shrink:0}
 
-/* ── STATS ── */
+/* ── STATS & DASHBOARD ── */
 .s3g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
 .sc{background:var(--s1);border:1px solid var(--brd);border-radius:var(--rs);padding:14px 8px;text-align:center}
 .sv{font-size:26px;font-weight:900;color:var(--acc2)}.sl{font-size:11px;color:var(--t3);margin-top:3px;font-weight:600}
-.dsg2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.dsg{
-  background:var(--s1);border:1px solid var(--brd);
-  border-radius:var(--rs);padding:10px 12px;
-  display:flex;flex-direction:column;align-items:flex-start;gap:5px;
+.dsg2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
+.doc-stat-card{background:var(--s1);border:1px solid var(--brd);border-radius:var(--rs);padding:12px;display:flex;flex-direction:column;gap:8px}
+.doc-stat-hdr{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.doc-total-badge{font-size:11px;font-weight:800;color:var(--acc2);background:rgba(59,130,246,.12);padding:3px 9px;border-radius:12px}
+.doc-stat-mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.stat-mini-box{background:var(--s2);border:1px solid var(--brd);border-radius:8px;padding:6px 3px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.stat-mini-box .s-ic{font-size:13px;margin-bottom:1px}
+.stat-mini-box .s-val{font-size:14px;font-weight:900;line-height:1.1}
+.stat-mini-box .s-lbl{font-size:9px;color:var(--t3);font-weight:700;margin-top:2px}
+.stat-mini-box.s-shifts{border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.06)}.stat-mini-box.s-shifts .s-val{color:var(--acc2)}
+.stat-mini-box.s-sess{border-color:rgba(168,85,247,.3);background:rgba(168,85,247,.06)}.stat-mini-box.s-sess .s-val{color:var(--pur2)}
+.stat-mini-box.s-off{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.06)}.stat-mini-box.s-off .s-val{color:var(--grn)}
+.stat-mini-box.s-sick{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.06)}.stat-mini-box.s-sick .s-val{color:var(--red)}
+
+/* ── HOLIDAY & CONFLICT BADGES ── */
+.hol-badge{
+  display:block;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;
+  font-size:9px;font-weight:900;padding:1.5px 4px;border-radius:4px;margin-bottom:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;
+  box-shadow:0 1px 4px rgba(124,58,237,.35);text-align:center;
 }
+.conflict-card{
+  background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.4);
+  border-radius:var(--rs);padding:12px 14px;margin-bottom:16px;
+}
+.dc.has-conflict, .cc.has-conflict{
+  border:2px solid var(--red)!important;box-shadow:0 0 8px rgba(239,68,68,.4);
+}
+
 
 /* ── DOCTOR CARDS ── */
 .dcard{
@@ -598,6 +621,7 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
     <div class="cpills" id="c-pills"></div>
     <div class="mhdr"><div class="mtitle" id="c-ttl"></div></div>
     <div class="ctrow" id="c-ctrs"></div>
+    <div id="c-conflicts"></div>
     <div class="sgrid-wrap" style="margin-bottom:16px"><div id="c-grid" class="sgrid"></div></div>
     <button class="bs" onclick="saveCons()"><span class="he">📢 פרסום גרפיק</span><span class="en">📢 Publish Schedule</span></button>
     <button class="bd" onclick="clearCons()"><span class="he">🗑 ניקוי טיוטה</span><span class="en">🗑 Clear Draft</span></button>
@@ -754,7 +778,10 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
 <div class="overlay" id="hm"><div class="msh">
   <div class="mhdl"></div><div class="mtm" id="hm-ttl"></div>
   <div class="fg"><span class="dlabel"><span class="he">סוג</span><span class="en">Type</span></span><select class="fsel" id="hm-type"></select></div>
-  <div class="fg"><span class="dlabel"><span class="he">תאריך</span><span class="en">Date</span></span><input class="finp" id="hm-date" type="date"></div>
+  <div class="de-row">
+    <div><span class="dlabel"><span class="he">מתאריך</span><span class="en">From Date</span></span><input class="finp" id="hm-date-start" type="date"></div>
+    <div><span class="dlabel"><span class="he">עד תאריך (לא חובה)</span><span class="en">To Date (optional)</span></span><input class="finp" id="hm-date-end" type="date"></div>
+  </div>
   <div class="fg"><span class="dlabel"><span class="he">רופא</span><span class="en">Doctor</span></span><select class="fsel" id="hm-doc"></select></div>
   <div id="hm-err" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none"></div>
   <button class="bs" onclick="saveHMModal()" style="margin-bottom:8px"><span class="he">שמירה</span><span class="en">Save</span></button>
@@ -833,12 +860,100 @@ function setReq(d){localStorage.setItem(SK_REQ,JSON.stringify(d));schedulePush()
 // External (non-account) session beneficiaries
 const EXT_BENEF=[{id:'ext_hagi',he:'חגי',en:'Hagi',ext:true},{id:'ext_badir',he:'בדיר',en:'Badir',ext:true}];
 function getBenefPool(){ return getDutyDocs().concat(EXT_BENEF); }
-function findBenef(id){ return getBenefPool().find(p=>p.id===id); }
+function findBenef(id){ return getDocs().concat(EXT_BENEF).find(p=>String(p.id)===String(id)); }
 
 function sameMonth(dateStr,y,m){ const d=new Date(dateStr+'T00:00:00'); return d.getFullYear()===y && d.getMonth()===m; }
 function sameYear(dateStr,y){ return new Date(dateStr+'T00:00:00').getFullYear()===y; }
-function countSessForDoc(docId,y,m){ return getSess().filter(s=>sameMonth(s.date,y,m)&&s.beneficiaries.includes(docId)).length; }
-function countToffForDoc(docId,y,m,type){ return getToff().filter(h=>sameMonth(h.date,y,m)&&h.docId===docId&&(type?h.type===type:true)).length; }
+function countSessForDoc(docId,y,m){ return getSess().filter(s=>sameMonth(s.date,y,m)&&s.beneficiaries.some(b=>String(b)===String(docId))).length; }
+function countToffForDoc(docId,y,m,type){ return getToff().filter(h=>sameMonth(h.date,y,m)&&String(h.docId)===String(docId)&&(type?h.type===type:true)).length; }
+function toffTypeLabel(type){
+  return type==='off'?t('חופש','Day Off'):type==='off_weekend'?t('חופש אחרי תורנות סופ״ש','Off after weekend duty'):t('מחלה','Sick Leave');
+}
+function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';}
+
+function canViewAllDocs(){ return isSuperA() || isAdmin() || isSecretary(); }
+
+function getIsraeliHoliday(y,m,d){
+  try{
+    const date=new Date(y,m,d);
+    const dayStr=new Intl.DateTimeFormat('en-US-u-ca-hebrew',{day:'numeric'}).format(date);
+    const day=parseInt(dayStr,10);
+    const mName=new Intl.DateTimeFormat('en-US-u-ca-hebrew',{month:'long'}).format(date);
+
+    if(mName==='Elul'&&day===29)return{he:'ערב ראש השנה',en:'Erev Rosh Hashanah'};
+    if(mName==='Tishri'&&day===1)return{he:'ראש השנה א׳',en:'Rosh Hashanah I'};
+    if(mName==='Tishri'&&day===2)return{he:'ראש השנה ב׳',en:'Rosh Hashanah II'};
+    if(mName==='Tishri'&&day===9)return{he:'ערב יום כיפור',en:'Erev Yom Kippur'};
+    if(mName==='Tishri'&&day===10)return{he:'יום כיפור',en:'Yom Kippur'};
+    if(mName==='Tishri'&&day===14)return{he:'ערב סוכות',en:'Erev Sukkot'};
+    if(mName==='Tishri'&&day===15)return{he:'סוכות',en:'Sukkot'};
+    if(mName==='Tishri'&&day===21)return{he:'הושענא רבה',en:'Hoshana Rabbah'};
+    if(mName==='Tishri'&&day===22)return{he:'שמחת תורה',en:'Simchat Torah'};
+    if(mName.startsWith('Adar')&&day===14)return{he:'פורים',en:'Purim'};
+    if(mName.startsWith('Adar')&&day===15)return{he:'שושן פורים',en:'Shushan Purim'};
+    if(mName==='Nisan'&&day===14)return{he:'ערב פסח',en:'Erev Pesach'};
+    if(mName==='Nisan'&&day===15)return{he:'פסח',en:'Pesach'};
+    if(mName==='Nisan'&&day===21)return{he:'שביעי של פסח',en:"Shvi'i Shel Pesach"};
+    if(mName==='Iyar'&&day===4)return{he:'יום הזיכרון',en:'Yom HaZikaron'};
+    if(mName==='Iyar'&&day===5)return{he:'יום העצמאות',en:'Independence Day'};
+    if(mName==='Sivan'&&day===5)return{he:'ערב שבועות',en:'Erev Shavuot'};
+    if(mName==='Sivan'&&day===6)return{he:'שבועות',en:'Shavuot'};
+  }catch(e){}
+  return null;
+}
+
+function getDatesInRange(startStr,endStr){
+  const dates=[];
+  if(!startStr)return dates;
+  if(!endStr||endStr<startStr)endStr=startStr;
+  let curr=new Date(startStr+'T00:00:00');
+  const end=new Date(endStr+'T00:00:00');
+  while(curr<=end){
+    dates.push(curr.toISOString().slice(0,10));
+    curr.setDate(curr.getDate()+1);
+  }
+  return dates;
+}
+
+function getScheduleConflicts(y,m){
+  const conflicts=[];
+  const sched=getSched()[mk(y,m)]||{};
+  const sessList=getSess().filter(s=>sameMonth(s.date,y,m));
+  const toffList=getToff().filter(h=>sameMonth(h.date,y,m));
+  const docs=getDutyDocs();
+  const daysInM=new Date(y,m+1,0).getDate();
+
+  for(let d=1;d<=daysInM;d++){
+    const dateStr=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const dk=y+'-'+m+'-'+d;
+    const dow=new Date(y,m,d).getDay();
+
+    const dutyDocIds=new Set();
+    if(dow===5){
+      if(sched[dk+'_2']!==undefined&&sched[dk+'_2']!==null)dutyDocIds.add(String(sched[dk+'_2']));
+    }else{
+      if(sched[dk]!==undefined&&sched[dk]!==null)dutyDocIds.add(String(sched[dk]));
+    }
+
+    docs.forEach(doc=>{
+      const dId=String(doc.id);
+      const isDuty=dutyDocIds.has(dId);
+
+      const docToffs=toffList.filter(h=>h.date===dateStr&&String(h.docId)===dId);
+      if(docToffs.length>1){
+        conflicts.push({date:dateStr,day:d,docId:doc.id,docName:dn(doc),message:t('כפילות חופשה/מחלה באותו יום','Duplicate time off / sick leave on same date')});
+      }
+      if(isDuty&&docToffs.length>0){
+        conflicts.push({date:dateStr,day:d,docId:doc.id,docName:dn(doc),message:t('תורנות וגם חופש/מחלה באותו יום','Scheduled for duty AND time off on same date')});
+      }
+      const docSess=sessList.filter(s=>s.date===dateStr&&s.beneficiaries.some(b=>String(b)===dId));
+      if(isDuty&&docSess.length>0){
+        conflicts.push({date:dateStr,day:d,docId:doc.id,docName:dn(doc),message:t('תורנות וגם סשן באותו יום','Scheduled for duty AND session on same date')});
+      }
+    });
+  }
+  return conflicts;
+}
 function toffTypeLabel(type){
   return type==='off'?t('חופש','Day Off'):type==='off_weekend'?t('חופש אחרי תורנות סופ״ש','Off after weekend duty'):t('מחלה','Sick Leave');
 }
@@ -958,20 +1073,19 @@ function initApp(){
     nav_d.style.display='none';
     return;
   }
-  // staff & secretary: no wishes nav
+  // All doctors can view reports & yearly dashboard (locked to self if standard doctor)
   nav_w.style.display=isDutyRole(cu.role)?'flex':'none';
   nav_c.style.display=isAdmin()?'flex':'none';
-  nav_r.style.display=isSecretary()||isSuperA()?'flex':'none';
-  nav_y.style.display=isSecretary()||isSuperA()?'flex':'none';
+  nav_r.style.display='flex';
+  nav_y.style.display='flex';
   nav_d.style.display=isSuperA()?'flex':'none';
   if(isAdmin()) document.getElementById('pg-constr').style.display='';
-  if(isSecretary()||isSuperA()) document.getElementById('pg-reports').style.display='';
-  if(isSecretary()||isSuperA()) document.getElementById('pg-yearly').style.display='';
+  document.getElementById('pg-reports').style.display='';
+  document.getElementById('pg-yearly').style.display='';
   if(isSuperA()){
     document.getElementById('pg-data').style.display='';
     document.getElementById('pg-settings').style.display='';
     document.getElementById('nav-cfg').style.display='flex';
-    // sync always active via Google Sheets
   }
 }
 
@@ -1003,12 +1117,11 @@ function renderAll(){
   if(!cu)return;
   cu._idx=getDocs().findIndex(d=>d.id===cu.id);
   refreshTopbar();
-  // Sync via Google Sheets — always active, no token check needed
   renderSched();
   if(cu.role!=='staff'&&cu.role!=='secretary') renderWishes(false);
   if(isAdmin()) renderCons();
-  if(isSecretary()||isSuperA()) renderReports();
-  if(isSecretary()||isSuperA()) renderYearly();
+  renderReports();
+  renderYearly();
   if(isSuperA()) renderData();
 }
 
@@ -1027,7 +1140,6 @@ function renderSched(){
   document.getElementById('v-ttl').textContent=t(MHE[vM],MEN[vM])+' '+vY;
   document.getElementById('v-grid').innerHTML=buildGrid(vY,vM,sc,false);
   renderLeg(); renderStats(sc); renderSessSummary();
-  // Show scroll hint on narrow screens
   const hint = document.getElementById('scroll-hint');
   if(hint) hint.style.display = window.innerWidth < 420 ? 'block' : 'none';
 }
@@ -1037,6 +1149,8 @@ function buildGrid(y,m,data,ed){
   const dh=(lang==='he'?DHE:DEN).map((d,i)=>`<div class="dhdr${i===5?' fh':''}">${d}</div>`).join('');
   const first=new Date(y,m,1).getDay();
   const days=new Date(y,m+1,0).getDate();
+  const conflicts=ed?getScheduleConflicts(y,m):[];
+  const conflictDays=new Set(conflicts.map(c=>c.day));
   const cls=ed?'cc':'dc';
   let cells='';
   for(let i=0;i<first;i++)cells+=`<div class="${cls} em"></div>`;
@@ -1045,18 +1159,21 @@ function buildGrid(y,m,data,ed){
     const isFri=dow===5;
     const isT=!ed&&y===today.getFullYear()&&m===today.getMonth()&&d===today.getDate();
     const dk=y+'-'+m+'-'+d;
+    const hol=getIsraeliHoliday(y,m,d);
+    const holBadge=hol?`<div class="hol-badge" title="${hol.en}">${hol.he}</div>`:'';
     let c=cls;
     if(isFri)c+=' fr';if(isT)c+=' mt';
+    if(ed&&conflictDays.has(d))c+=' has-conflict';
     if(isFri){
       const id1=data[dk+'_1'],id2=data[dk+'_2'];
       const s1=chipH(docs,id1,t('עד 13:00','Until 13:00'),ed,`openDM('${dk}','1')`);
       const s2=chipH(docs,id2,t('אחרי 13:00','After 13:00'),ed,`openDM('${dk}','2')`);
-      cells+=`<div class="${c}"><div class="dn">${d}</div>${s1}${s2}${ed?'<div class="ap">+</div>':''}</div>`;
+      cells+=`<div class="${c}"><div class="dn">${d}</div>${holBadge}${s1}${s2}${ed?'<div class="ap">+</div>':''}</div>`;
     } else {
       const id=data[dk];
       const sh=chipH(docs,id,null,false,'');
       const oc=ed?`onclick="openDM('${dk}','day')"`:'';
-      cells+=`<div class="${c}" ${oc}><div class="dn">${d}</div>${sh}${ed?'<div class="ap">+</div>':''}</div>`;
+      cells+=`<div class="${c}" ${oc}><div class="dn">${d}</div>${holBadge}${sh}${ed?'<div class="ap">+</div>':''}</div>`;
     }
   }
   return dh+cells;
@@ -1126,7 +1243,6 @@ function renderStats(sc){
   });
   const tot=Object.values(cnt).reduce((a,b)=>a+b,0);
   const days=new Date(vY,vM+1,0).getDate();
-  // Count AM friday separately
   const cntAM={};docs.forEach(d=>cntAM[d.id]=0);
   Object.entries(sc).forEach(([k,v])=>{
     if(k.endsWith('_1')&&v!==undefined&&v!==null&&cntAM[v]!==undefined) cntAM[v]++;
@@ -1138,17 +1254,22 @@ function renderStats(sc){
       <div class="sc"><div class="sv">${docs.length}</div><div class="sl">${t('רופאים','Doctors')}</div></div>
     </div>
     <div class="dsg2">${docs.map((d,i)=>{
+      const idx=docColorIdx(d.id);
       const am=cntAM[d.id]||0;
       const sess=countSessForDoc(d.id,vY,vM);
       const off=countToffForDoc(d.id,vY,vM,'off')+countToffForDoc(d.id,vY,vM,'off_weekend');
       const sick=countToffForDoc(d.id,vY,vM,'sick');
-      return`<div class="dsg" style="flex-direction:column;align-items:flex-start;gap:4px">
-        <span class="chip ${docCls(i)}" style="font-size:11px;padding:3px 8px">${dn(d)}</span>
-        <div style="display:flex;gap:8px;width:100%">
-          <span style="font-size:13px;font-weight:900;color:var(--t2)">${cnt[d.id]||0} ${t('תורנות','shifts')}</span>
-          ${am?`<span style="font-size:11px;color:var(--t3)">+ ${am} ${t('בוקר','AM')}</span>`:''}
+      return`<div class="doc-stat-card">
+        <div class="doc-stat-hdr">
+          <span class="chip ${docCls(idx)}" style="font-size:12px;padding:4px 10px">${dn(d)}</span>
+          <span class="doc-total-badge">${cnt[d.id]||0} ${t('תורנויות','shifts')}${am?` (+${am} AM)`:''}</span>
         </div>
-        <div style="font-size:11px;color:var(--t3)">${t('סשנים','Sessions')}: ${sess} · ${t('חופש','Off')}: ${off} · ${t('מחלה','Sick')}: ${sick}</div>
+        <div class="doc-stat-mini-grid">
+          <div class="stat-mini-box s-shifts"><span class="s-ic">🩺</span><span class="s-val">${cnt[d.id]||0}</span><span class="s-lbl">${t('תורנות','Shifts')}</span></div>
+          <div class="stat-mini-box s-sess"><span class="s-ic">⚡</span><span class="s-val">${sess}</span><span class="s-lbl">${t('סשנים','Sessions')}</span></div>
+          <div class="stat-mini-box s-off"><span class="s-ic">🏖️</span><span class="s-val">${off}</span><span class="s-lbl">${t('חופש','Off')}</span></div>
+          <div class="stat-mini-box s-sick"><span class="s-ic">🩹</span><span class="s-val">${sick}</span><span class="s-lbl">${t('מחלה','Sick')}</span></div>
+        </div>
       </div>`;
     }).join('')}</div>`;
 }
@@ -1257,6 +1378,20 @@ function renderCons(){
   document.getElementById('c-ctrs').innerHTML=docs.map((d,i)=>
     `<div class="ctc ${docCls(i)}"><span>${dn(d)}</span><span class="ctn">${cnt[d.id]||0}</span></div>`
   ).join('');
+  
+  const conflicts=getScheduleConflicts(cY,cM);
+  const cEl=document.getElementById('c-conflicts');
+  if(cEl){
+    if(conflicts.length>0){
+      cEl.innerHTML=`<div class="conflict-card">
+        <div style="font-size:13px;font-weight:900;color:var(--red);margin-bottom:6px">⚠️ ${t('התראות התנגשות בגרפיק','Schedule Conflicts Detected')} (${conflicts.length})</div>
+        ${conflicts.map(c=>`<div style="font-size:12px;color:var(--tx);margin-bottom:3px">• <strong>${c.date}</strong>: ${c.docName} — ${c.message}</div>`).join('')}
+      </div>`;
+    }else{
+      cEl.innerHTML='';
+    }
+  }
+
   document.getElementById('c-grid').innerHTML=buildGrid(cY,cM,cD,true);
   renderRequests();
   renderCSessList();
@@ -1304,7 +1439,7 @@ function openSM(forRequest){
   const procSel=document.getElementById('sm-proc');
   procSel.innerHTML=`<option value="">—</option><option value="CABG">CABG</option><option value="Valve">Valve</option><option value="CABG+Valve">CABG+Valve</option><option value="Other">${t('אחר','Other')}</option>`;
   procSel.value='';
-  smBenefSel=new Set(forRequest?[cu.id]:[]);
+  smBenefSel=new Set(forRequest?[String(cu.id)] : []);
   renderSMBenef();
   document.getElementById('sm-err').style.display='none';
   document.getElementById('sm').classList.add('open');
@@ -1312,15 +1447,17 @@ function openSM(forRequest){
 function renderSMBenef(){
   const pool=getBenefPool();
   document.getElementById('sm-benef').innerHTML=pool.map(p=>{
-    const on=smBenefSel.has(p.id);
-    return `<div class="wdoc-pill" style="background:${on?'var(--acc)':'var(--s2)'};border-color:${on?'var(--acc)':'var(--brd)'};color:${on?'#fff':'var(--t2)'}" onclick="toggleSMBenef('${p.id}')">${dn(p)}</div>`;
+    const strId=String(p.id);
+    const on=smBenefSel.has(strId);
+    return `<div class="wdoc-pill" style="background:${on?'var(--acc)':'var(--s2)'};border-color:${on?'var(--acc)':'var(--brd)'};color:${on?'#fff':'var(--t2)'}" onclick="toggleSMBenef('${strId}')">${dn(p)}</div>`;
   }).join('');
 }
 function toggleSMBenef(id){
-  if(smBenefSel.has(id)){smBenefSel.delete(id);}
+  const strId=String(id);
+  if(smBenefSel.has(strId)){smBenefSel.delete(strId);}
   else{
     if(smBenefSel.size>=2){showToast(t('ניתן לבחור עד 2 מוטבים','Max 2 beneficiaries allowed'),'err');return;}
-    smBenefSel.add(id);
+    smBenefSel.add(strId);
   }
   renderSMBenef();
 }
@@ -1329,6 +1466,24 @@ function saveSessionModal(){
   const date=document.getElementById('sm-date').value;
   if(!date){showErr('sm-err',t('נא לבחור תאריך','Please select a date'));return;}
   if(smBenefSel.size===0){showErr('sm-err',t('נא לבחור לפחות מוטב אחד','Select at least one beneficiary'));return;}
+  
+  const pts=date.split('-');
+  if(pts.length===3){
+    const y=+pts[0], m=+pts[1]-1, d=+pts[2];
+    const dk=y+'-'+m+'-'+d;
+    const sched=getSched()[mk(y,m)]||{};
+    const dow=new Date(y,m,d).getDay();
+    const dutyId=dow===5?sched[dk+'_2']:sched[dk];
+    if(dutyId!==undefined&&dutyId!==null){
+      const conflictBenefs=Array.from(smBenefSel).filter(bId=>String(bId)===String(dutyId));
+      if(conflictBenefs.length>0){
+        const doc=getDocs().find(x=>String(x.id)===String(dutyId));
+        showErr('sm-err',t('התנגשות: '+dn(doc)+' משובץ כדורן בתאריך זה','Conflict: '+(doc?dn(doc):'Doctor')+' is scheduled on duty on this date'));
+        return;
+      }
+    }
+  }
+
   document.getElementById('sm-err').style.display='none';
   const rec={
     id:'s'+Date.now()+Math.random().toString(36).slice(2,7),
@@ -1361,7 +1516,8 @@ function openHM(forRequest){
     `<option value="off">${t('יום חופש','Day Off')}</option>`+
     `<option value="off_weekend">${t('חופש אחרי תורנות סופ״ש','Off after weekend duty')}</option>`+
     `<option value="sick">${t('מחלה','Sick Leave')}</option>`;
-  document.getElementById('hm-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('hm-date-start').value=new Date().toISOString().slice(0,10);
+  document.getElementById('hm-date-end').value='';
   const docSel=document.getElementById('hm-doc');
   if(forRequest){
     docSel.innerHTML=`<option value="${cu.id}">${dn(cu)}</option>`;
@@ -1375,19 +1531,46 @@ function openHM(forRequest){
 }
 function closeHM(){document.getElementById('hm').classList.remove('open')}
 function saveHMModal(){
-  const date=document.getElementById('hm-date').value;
-  if(!date){showErr('hm-err',t('נא לבחור תאריך','Please select a date'));return;}
-  document.getElementById('hm-err').style.display='none';
+  const startStr=document.getElementById('hm-date-start').value;
+  const endStr=document.getElementById('hm-date-end').value||startStr;
+  if(!startStr){showErr('hm-err',t('נא לבחור תאריך התחלה','Please select a start date'));return;}
+  if(endStr<startStr){showErr('hm-err',t('תאריך סיום אינו יכול להיות לפני תאריך התחלה','End date cannot be before start date'));return;}
+
   const docId=+document.getElementById('hm-doc').value;
   const type=document.getElementById('hm-type').value;
-  const rec={id:'h'+Date.now()+Math.random().toString(36).slice(2,7),type,date,docId,createdBy:cu.id,createdAt:Date.now()};
+  const dates=getDatesInRange(startStr,endStr);
+
+  for(const dStr of dates){
+    const pts=dStr.split('-');
+    const y=+pts[0], m=+pts[1]-1, d=+pts[2];
+    const dk=y+'-'+m+'-'+d;
+    const sched=getSched()[mk(y,m)]||{};
+    const dow=new Date(y,m,d).getDay();
+    const dutyId=dow===5?sched[dk+'_2']:sched[dk];
+    if(dutyId!==undefined&&dutyId!==null&&String(dutyId)===String(docId)){
+      const doc=getDocs().find(x=>x.id===docId);
+      showErr('hm-err',t('התנגשות: '+dn(doc)+' משובץ כדורן ב-'+dStr,'Conflict: '+(doc?dn(doc):'Doctor')+' is scheduled on duty on '+dStr));
+      return;
+    }
+  }
+
+  document.getElementById('hm-err').style.display='none';
+
   if(hmForRequest){
     const reqs=getReq();
-    reqs.push({id:'r'+Date.now()+Math.random().toString(36).slice(2,5),kind:'timeoff',payload:rec,docId:cu.id,status:'pending',createdAt:Date.now()});
+    dates.forEach(dStr=>{
+      const rec={id:'h'+Date.now()+Math.random().toString(36).slice(2,7),type,date:dStr,docId,createdBy:cu.id,createdAt:Date.now()};
+      reqs.push({id:'r'+Date.now()+Math.random().toString(36).slice(2,5),kind:'timeoff',payload:rec,docId,status:'pending',createdAt:Date.now()});
+    });
     setReq(reqs);
     showToast(t('הבקשה נשלחה לאישור ✓','Request sent for approval ✓'));
   } else {
-    const h=getToff(); h.push(rec); setToff(h);
+    const h=getToff();
+    dates.forEach(dStr=>{
+      const rec={id:'h'+Date.now()+Math.random().toString(36).slice(2,7),type,date:dStr,docId,createdBy:cu.id,createdAt:Date.now()};
+      h.push(rec);
+    });
+    setToff(h);
     showToast(t('נוסף ✓','Added ✓'));
   }
   closeHM();
@@ -1499,7 +1682,11 @@ function renderYearly(){
   const yEl=document.getElementById('y-years'); if(!yEl)return;
   yEl.innerHTML=sorted.map(y=>`<div class="mpill ${y===yYear?'ac':''}" onclick="selYear(${y})">${y}</div>`).join('');
 
-  const docs=getDutyDocs(), sc=getSched();
+  let docs=getDutyDocs();
+  if(!canViewAllDocs()){
+    docs=docs.filter(d=>d.id===cu.id);
+  }
+  const sc=getSched();
   let h=`<table class="rtable"><thead><tr>
     <th>${t('רופא','Doctor')}</th><th>${t('תורנויות','Shifts')}</th><th>${t('בוקר','AM')}</th>
     <th>${t('סשנים','Sessions')}</th><th>${t('חופשות','Off')}</th><th>${t('מחלה','Sick')}</th>
@@ -1513,11 +1700,11 @@ function renderYearly(){
         if(k.endsWith('_1'))am++; else shifts++;
       });
     }
-    const sess=getSess().filter(s=>sameYear(s.date,yYear)&&s.beneficiaries.includes(d.id)).length;
-    const off=getToff().filter(x=>sameYear(x.date,yYear)&&x.docId===d.id&&(x.type==='off'||x.type==='off_weekend')).length;
-    const sick=getToff().filter(x=>sameYear(x.date,yYear)&&x.docId===d.id&&x.type==='sick').length;
+    const sess=getSess().filter(s=>sameYear(s.date,yYear)&&s.beneficiaries.some(b=>String(b)===String(d.id))).length;
+    const off=getToff().filter(x=>sameYear(x.date,yYear)&&String(x.docId)===String(d.id)&&(x.type==='off'||x.type==='off_weekend')).length;
+    const sick=getToff().filter(x=>sameYear(x.date,yYear)&&String(x.docId)===String(d.id)&&x.type==='sick').length;
     h+=`<tr><td><div style="display:flex;align-items:center;gap:7px">
-      <div class="dav" style="width:28px;height:28px;font-size:11px;background:${docBg(i)}22;color:${docBg(i)}">${dn(d)[0]}</div>
+      <div class="dav" style="width:28px;height:28px;font-size:11px;background:${docBg(docColorIdx(d.id))}22;color:${docBg(docColorIdx(d.id))}">${dn(d)[0]}</div>
       <span style="font-weight:600;font-size:12px">${dn(d)}</span></div></td>
       <td class="num">${shifts}</td><td>${am}</td><td>${sess}</td><td>${off}</td><td>${sick}</td></tr>`;
   });
@@ -1529,7 +1716,9 @@ function exportYearlyPDF(){
   if(!window.jspdf){showToast('jsPDF not loaded','err');return}
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const docs=getDutyDocs(), sc=getSched();
+  let docs=getDutyDocs();
+  if(!canViewAllDocs()) docs=docs.filter(d=>d.id===cu.id);
+  const sc=getSched();
   doc.setFont('helvetica','bold');doc.setFontSize(14);
   doc.text('Wolfson Cardiac — Yearly Dashboard '+yYear,14,14);
   doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(130,130,130);
@@ -1544,9 +1733,9 @@ function exportYearlyPDF(){
       const monthSc=sc[mk(yYear,m)]; if(!monthSc)continue;
       Object.entries(monthSc).forEach(([k,v])=>{if(v!==d.id)return;if(k.endsWith('_1'))am++;else shifts++;});
     }
-    const sess=getSess().filter(s=>sameYear(s.date,yYear)&&s.beneficiaries.includes(d.id)).length;
-    const off=getToff().filter(x=>sameYear(x.date,yYear)&&x.docId===d.id&&(x.type==='off'||x.type==='off_weekend')).length;
-    const sick=getToff().filter(x=>sameYear(x.date,yYear)&&x.docId===d.id&&x.type==='sick').length;
+    const sess=getSess().filter(s=>sameYear(s.date,yYear)&&s.beneficiaries.some(b=>String(b)===String(d.id))).length;
+    const off=getToff().filter(x=>sameYear(x.date,yYear)&&String(x.docId)===String(d.id)&&(x.type==='off'||x.type==='off_weekend')).length;
+    const sick=getToff().filter(x=>sameYear(x.date,yYear)&&String(x.docId)===String(d.id)&&x.type==='sick').length;
     doc.text(d.en,14,y);doc.text(String(shifts),80,y);doc.text(String(am),105,y);doc.text(String(sess),125,y);doc.text(String(off),155,y);doc.text(String(sick),175,y);
     y+=6;if(y>270){doc.addPage();y=20;}
   });
@@ -1563,7 +1752,6 @@ function rptTab(tab,btn){
 }
 
 function renderReports(){
-  // month pills from saved schedules
   const all=getSched(),ks=Object.keys(all).sort();
   let h='';
   ks.forEach(k=>{
@@ -1572,6 +1760,18 @@ function renderReports(){
     h+=`<div class="rms ${ac}" onclick="selRptMonth(${yr},${mi})">${t(MHE[mi],MEN[mi])} ${yr}</div>`;
   });
   document.getElementById('rpt-months').innerHTML=h||`<span style="color:var(--t3);font-size:12px">${t('אין גרפיקים','No schedules')}</span>`;
+  
+  const rptTabsEl=document.querySelector('#pg-reports .rpt-tabs');
+  if(rptTabsEl){
+    if(!canViewAllDocs()){
+      rptTabsEl.style.display='none';
+      rptActiveTab='by-doc';
+      window._rptDocId=cu.id;
+    }else{
+      rptTabsEl.style.display='flex';
+    }
+  }
+
   renderReportContent();
 }
 
@@ -1581,6 +1781,11 @@ function renderReportContent(){
   const sc=getSched()[mk(rptY,rptM)]||{};
   const docs=getDutyDocs();
   const monthName=t(MHE[rptM],MEN[rptM])+' '+rptY;
+
+  if(!canViewAllDocs()){
+    rptActiveTab='by-doc';
+    window._rptDocId=cu.id;
+  }
 
   if(rptActiveTab==='by-doc'){
     renderRptByDoc(sc,docs,monthName);
@@ -1629,9 +1834,7 @@ function getShiftsForDoc(sc,docId,y,m){
     const dk=y+'-'+m+'-'+d;
     const dayName=t(DNAME_HE[dow],DNAME_EN[dow]);
     if(dow===5){
-      // AM = morning, not a duty shift — tracked separately
       if(sc[dk+'_1']===docId) shifts.push({d,type:'friAM',dow,dayName,label:t('בוקר','AM'),isAM:true});
-      // PM = actual duty shift
       if(sc[dk+'_2']===docId) shifts.push({d,type:'friPM',dow,dayName,label:t('תורנות','Duty'),isAM:false});
     } else {
       if(sc[dk]===docId) shifts.push({d,type:'regular',dow,dayName,label:''});
@@ -1645,25 +1848,28 @@ function fmtDate(d,m,y){
 }
 
 function renderRptByDoc(sc,docs,monthName){
-  // doc selector
-  let h=`<div style="margin-bottom:12px">
-    <div class="stitle" style="font-size:12px;margin-bottom:8px">${t('בחר רופא','Select Doctor')}</div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">`;
-  docs.forEach((d,i)=>{
-    const active=window._rptDocId===d.id?`border:2px solid ${docBg(i)}`:'border:1px solid var(--brd)';
-    h+=`<div class="wdoc-pill ${docCls(i)}" style="${active}" onclick="selRptDoc(${d.id})">${dn(d)}</div>`;
-  });
-  h+='</div></div>';
-
+  if(!canViewAllDocs()) window._rptDocId=cu.id;
   const docId=window._rptDocId!==undefined?window._rptDocId:docs[0]?.id;
   if(!window._rptDocId) window._rptDocId=docId;
+
+  let h='';
+  if(canViewAllDocs()){
+    h+=`<div style="margin-bottom:12px">
+      <div class="stitle" style="font-size:12px;margin-bottom:8px">${t('בחר רופא','Select Doctor')}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">`;
+    docs.forEach((d,i)=>{
+      const active=window._rptDocId===d.id?`border:2px solid ${docBg(i)}`:'border:1px solid var(--brd)';
+      h+=`<div class="wdoc-pill ${docCls(i)}" style="${active}" onclick="selRptDoc(${d.id})">${dn(d)}</div>`;
+    });
+    h+='</div></div>';
+  }
 
   const shifts=getShiftsForDoc(sc,docId,rptY,rptM);
   const doc=docs.find(d=>d.id===docId);
   const idx=docs.findIndex(d=>d.id===docId);
 
   h+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-    <div class="dav" style="width:36px;height:36px;font-size:13px;background:${docBg(idx)}22;color:${docBg(idx)}">${doc?dn(doc)[0]:''}</div>
+    <div class="dav" style="width:36px;height:36px;font-size:13px;background:${docBg(idx>=0?idx:0)}22;color:${docBg(idx>=0?idx:0)}">${doc?dn(doc)[0]:''}</div>
     <div>
       <div style="font-size:15px;font-weight:800">${doc?dn(doc):''}</div>
       <div style="font-size:12px;color:var(--t3)">${monthName} · ${shifts.length} ${t('תורנויות','shifts')}</div>
@@ -1691,9 +1897,8 @@ function renderRptByDoc(sc,docs,monthName){
     h+=`<div style="color:var(--t3);font-size:13px;padding:16px 0;text-align:center">${t('אין תורנויות בחודש זה','No shifts this month')}</div>`;
   }
 
-  // Sessions & time-off for this doctor this month
-  const docSess=getSess().filter(s=>sameMonth(s.date,rptY,rptM)&&s.beneficiaries.includes(docId)).sort((a,b)=>a.date.localeCompare(b.date));
-  const docToff=getToff().filter(x=>sameMonth(x.date,rptY,rptM)&&x.docId===docId).sort((a,b)=>a.date.localeCompare(b.date));
+  const docSess=getSess().filter(s=>sameMonth(s.date,rptY,rptM)&&s.beneficiaries.some(b=>String(b)===String(docId))).sort((a,b)=>a.date.localeCompare(b.date));
+  const docToff=getToff().filter(x=>sameMonth(x.date,rptY,rptM)&&String(x.docId)===String(docId)).sort((a,b)=>a.date.localeCompare(b.date));
   h+=`<div style="font-size:13px;font-weight:700;margin:18px 0 10px;color:var(--t2)">${t('סשנים','Sessions')} (${docSess.length})</div>`;
   h+=docSess.length?`<table class="rtable"><thead><tr><th>${t('תאריך','Date')}</th><th>${t('מקרה','Case')}</th><th>${t('ניתוח','Procedure')}</th></tr></thead><tbody>${
     docSess.map(s=>`<tr><td class="date-cell">${s.date}</td><td>${s.caseNo||'—'}</td><td>${s.procedure||'—'}</td></tr>`).join('')
