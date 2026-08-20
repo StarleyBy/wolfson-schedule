@@ -858,7 +858,7 @@ function setToff(d){localStorage.setItem(SK_TOFF,JSON.stringify(d));schedulePush
 function setReq(d){localStorage.setItem(SK_REQ,JSON.stringify(d));schedulePush();}
 
 // External (non-account) session beneficiaries
-const EXT_BENEF=[{id:'ext_hagi',he:'חגי',en:'Hagi',ext:true},{id:'ext_badir',he:'בדיר',en:'Badir',ext:true}];
+const EXT_BENEF=[{id:'ext_hagi',he:'חגי',en:'Hagi',ext:true},{id:'ext_badir',he:'בדיר',en:'Badir',ext:true},{id:'ext_yael',he:'יעל',en:'Yael',ext:true},{id:'ext_lior',he:'ליור',en:'Lior',ext:true}];
 function getBenefPool(){ return getDutyDocs().concat(EXT_BENEF); }
 function findBenef(id){ return getDocs().concat(EXT_BENEF).find(p=>String(p.id)===String(id)); }
 
