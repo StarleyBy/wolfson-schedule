@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="Wolfson">
 <meta name="theme-color" content="#3b82f6">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Caveat:wght@600;700&family=Pacifico&family=Amatic+SC:wght@700&family=Secular+One&family=Varela+Round&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 /* ── TOKENS ── */
@@ -21,6 +21,7 @@
   --tx:#e2e8f0;--t2:#94a3b8;--t3:#64748b;--t4:#445566;
   --grn:#10b981;--yel:#f59e0b;--red:#ef4444;
   --fb:#0c0618;--fb2:#6d28d9;
+  --sb:#1c070f;--sb2:#be123c;--bur:#f43f5e;--bur2:#fb7185;
   --r:14px;--rs:10px;--fn:'Heebo',sans-serif;
 }
 [data-theme="light"]{
@@ -29,6 +30,7 @@
   --tx:#0f172a;--t2:#1e293b;--t3:#475569;--t4:#94a3b8;
   --grn:#059669;--yel:#b45309;--red:#dc2626;
   --fb:#f3eeff;--fb2:#7c3aed;
+  --sb:#fff1f2;--sb2:#e11d48;--bur:#be123c;--bur2:#9f1239;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -197,10 +199,12 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
   white-space:nowrap;
 }
 .dhdr.fh{color:var(--pur2)}
+.dhdr.sh{color:var(--bur2)}
 
 /* View cells */
 .dc{background:var(--s1);min-height:80px;padding:6px 4px;position:relative}
 .dc.fr{background:var(--fb);border-top:2.5px solid var(--fb2)}
+.dc.sa{background:var(--sb);border-top:2.5px solid var(--sb2)}
 .dc.mt{background:var(--s2);box-shadow:inset 0 0 0 2px var(--acc)}
 .dc.em{background:var(--bg)}
 
@@ -211,6 +215,7 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
 }
 .cc:hover{background:var(--s2)}
 .cc.fr{background:var(--fb);border-top:2.5px solid var(--fb2)}
+.cc.sa{background:var(--sb);border-top:2.5px solid var(--sb2)}
 .cc.em{background:var(--bg);cursor:default;pointer-events:none}
 
 /* Wish cells */
@@ -220,11 +225,14 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
 }
 .wc:hover:not(.em){background:var(--s2)}
 .wc.fr{background:var(--fb);border-top:2.5px solid var(--fb2)}
+.wc.sa{background:var(--sb);border-top:2.5px solid var(--sb2)}
 .wc.em{background:var(--bg);cursor:default;pointer-events:none}
 .wc.off{background:rgba(239,68,68,.13)}.wc.off .dn{color:var(--red)}
 
 /* Day number */
 .dn{font-size:13px;font-weight:900;color:var(--t4);margin-bottom:4px;line-height:1}
+.dc.fr .dn, .cc.fr .dn, .wc.fr .dn{color:var(--pur2)}
+.dc.sa .dn, .cc.sa .dn, .wc.sa .dn{color:var(--bur2)}
 .dc.mt .dn{color:var(--acc2)}
 
 /* Doctor chips */
@@ -314,6 +322,48 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;
   box-shadow:0 1px 4px rgba(124,58,237,.35);text-align:center;
 }
+.hol-badge.chag-badge{background:linear-gradient(135deg,#be123c,#f43f5e);box-shadow:0 1px 4px rgba(190,18,60,.4)}
+.hol-badge.mem-badge{background:linear-gradient(135deg,#475569,#334155)}
+
+/* ── FESTIVE BANNER & AMBIANCE ── */
+.festive-banner{
+  position:relative;border-radius:var(--r);padding:14px 16px;margin-bottom:14px;
+  border:1px solid rgba(255,255,255,0.18);box-shadow:0 8px 32px rgba(0,0,0,0.25);
+  backdrop-filter:blur(12px);overflow:hidden;display:flex;align-items:center;
+  justify-content:space-between;gap:12px;animation:bannerSlideIn .3s ease-out;
+  color:#fff;
+}
+@keyframes bannerSlideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.festive-content{display:flex;align-items:center;gap:12px;flex:1;min-width:0;position:relative;z-index:2}
+.festive-icon{font-size:32px;line-height:1;flex-shrink:0;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.35))}
+.festive-text{display:flex;flex-direction:column;min-width:0}
+.art-greeting{
+  font-family:'Caveat','Pacifico','Amatic SC',cursive,var(--fn);
+  font-size:25px;font-weight:700;line-height:1.25;letter-spacing:.02em;
+  color:#ffffff;text-shadow:0 2px 10px rgba(0,0,0,0.35);
+}
+[data-lang="he"] .art-greeting{
+  font-family:'Secular One','Varela Round','Heebo',sans-serif;
+  font-size:23px;font-weight:800;letter-spacing:.02em;
+}
+.festive-sub{font-size:12px;color:rgba(255,255,255,0.9);font-weight:500;margin-top:2px;line-height:1.3}
+.festive-btn-close{
+  background:rgba(255,255,255,0.18);border:none;color:#fff;
+  width:26px;height:26px;border-radius:50%;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;transition:all .18s;flex-shrink:0;position:relative;z-index:2;
+}
+.festive-btn-close:hover{background:rgba(255,255,255,0.35);transform:scale(1.08)}
+
+/* Snow cap hanging effect */
+.snow-cap-layer{
+  position:absolute;top:-1px;left:0;right:0;height:18px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 30' preserveAspectRatio='none'%3E%3Cpath d='M0,0 L1000,0 L1000,12 C980,18 960,8 940,15 C920,22 900,10 880,16 C860,22 840,12 820,18 C800,24 780,14 760,20 C740,26 720,16 700,22 C680,28 660,18 640,24 C620,30 600,20 580,26 C560,30 540,18 520,24 C500,30 480,20 460,26 C440,30 420,18 400,24 C380,30 360,20 340,26 C320,30 300,18 280,24 C260,30 240,20 220,26 C200,30 180,18 160,24 C140,30 120,20 100,26 C80,30 60,18 40,24 C20,30 0,18 0,24 Z' fill='%23ffffff' opacity='0.92'/%3E%3C/svg%3E");
+  background-size:100% 100%;pointer-events:none;z-index:3;
+}
+.snowflake-box{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}
+.snowflake{position:absolute;top:-10px;color:#fff;opacity:.8;animation:sfFall linear infinite}
+@keyframes sfFall{0%{transform:translateY(-10px) rotate(0deg);opacity:.9}100%{transform:translateY(80px) rotate(360deg);opacity:.1}}
 .conflict-card{
   background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.4);
   border-radius:var(--rs);padding:12px 14px;margin-bottom:16px;
@@ -577,6 +627,7 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
 
   <!-- SCHEDULE -->
   <div id="pg-schedule" class="page active">
+    <div id="festive-banner-wrap"></div>
     <div class="mhdr">
       <div class="mtitle" id="v-ttl"></div>
       <div class="mhr">
@@ -671,6 +722,9 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
   <!-- DATA (superadmin) -->
   <div id="pg-data" class="page" style="display:none">
     <div class="stitle"><span class="he">ניהול נתונים</span><span class="en">Data Management</span></div>
+    <div class="stitle" style="font-size:13px;margin-bottom:10px"><span class="he">בדיקת ברכות וחגים</span><span class="en">Holiday & Greeting Tester</span></div>
+    <button class="badd" style="margin-bottom:14px;border-style:solid;background:var(--s2);color:var(--acc2);border-color:var(--acc)" onclick="openHolidayTester()">🎉 <span class="he">בדיקת ברכות חגים וסופ״ש</span><span class="en">Test Holiday Greetings</span></button>
+    <div class="sep"></div>
     <div class="stitle" style="font-size:13px;margin-bottom:10px"><span class="he">רשימת משתמשים</span><span class="en">Users List</span></div>
     <button class="badd" onclick="openAddDoc()">➕ <span class="he">הוספת משתמש</span><span class="en">Add User</span></button>
     <div id="d-docs"></div>
@@ -796,6 +850,38 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
   <div class="mcanc" onclick="closeLO()"><span class="he">ביטול</span><span class="en">Cancel</span></div>
 </div></div>
 
+<!-- HOLIDAY TESTER MODAL -->
+<div class="overlay" id="htm"><div class="msh">
+  <div class="mhdl"></div>
+  <div class="mtm">🎉 <span class="he">בדיקת ברכות וחגים</span><span class="en">Holiday & Greeting Tester</span></div>
+  <div class="ibox" style="margin-bottom:14px">
+    <span class="ibox-i">✨</span>
+    <span><span class="he">בחר חג או תאריך כדי לבחון את שפות הברכה (עברית/אנגלית) והעיצוב האמנותי.</span><span class="en">Select a holiday or custom date to test bilingual greetings and artistic ambiance.</span></span>
+  </div>
+  <div class="stitle" style="font-size:12px;margin-bottom:8px"><span class="he">חגים ואירועים</span><span class="en">Holidays & Events</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+    <button class="bsm pri" onclick="setTestHoliday('shabbat')">🕯️ Shabbat</button>
+    <button class="bsm pri" onclick="setTestHoliday('shavua_tov')">🌟 Shavua Tov</button>
+    <button class="bsm pri" onclick="setTestHoliday('rosh_hashanah')">🍎 Rosh Hashanah</button>
+    <button class="bsm pri" onclick="setTestHoliday('yom_kippur')">🕊️ Yom Kippur</button>
+    <button class="bsm pri" onclick="setTestHoliday('sukkot')">🌿 Sukkot</button>
+    <button class="bsm pri" onclick="setTestHoliday('hanukkah')">🕎 Hanukkah</button>
+    <button class="bsm pri" onclick="setTestHoliday('purim')">🎭 Purim</button>
+    <button class="bsm pri" onclick="setTestHoliday('pesach')">🍷 Pesach</button>
+    <button class="bsm pri" onclick="setTestHoliday('atzmaut')">🇮🇱 Independence</button>
+    <button class="bsm pri" onclick="setTestHoliday('shavuot')">🌾 Shavuot</button>
+    <button class="bsm pri" onclick="setTestHoliday('newyear')">🎆 New Year</button>
+    <button class="bsm pri" onclick="setTestHoliday('christmas')">🎄 Xmas (West)</button>
+    <button class="bsm pri" onclick="setTestHoliday('christmas_orth')">☦️ Xmas (Orth)</button>
+  </div>
+  <div class="fg">
+    <span class="dlabel"><span class="he">או בחר תאריך מותאם אישית</span><span class="en">Or Pick Custom Date</span></span>
+    <input class="finp" id="htm-custom-date" type="date" onchange="onCustomTestDateChange(this.value)">
+  </div>
+  <button class="bd" style="margin-top:4px;margin-bottom:10px" onclick="clearTestDate()"><span class="he">🔄 איפוס לתאריך כעת</span><span class="en">🔄 Reset to Current Date</span></button>
+  <div class="mcanc" onclick="closeHolidayTester()"><span class="he">סגור</span><span class="en">Close</span></div>
+</div></div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -875,29 +961,37 @@ function canViewAllDocs(){ return isSuperA() || isAdmin() || isSecretary(); }
 
 function getIsraeliHoliday(y,m,d){
   try{
+    if(m===11&&d===24) return {he:'ערב חג המולד', en:'Christmas Eve', isErev:true, key:'christmas'};
+    if(m===11&&d===25) return {he:'חג המולד', en:'Christmas', isChag:true, key:'christmas'};
+    if(m===11&&d===31) return {he:'ערב ראש השנה האזרחית', en:"New Year's Eve", isErev:true, key:'newyear'};
+    if(m===0&&d===1) return {he:'ראש השנה האזרחית', en:"New Year's Day", isChag:true, key:'newyear'};
+    if(m===0&&d===6) return {he:'ערב חג המולד המוצדק', en:'Orthodox Christmas Eve', isErev:true, key:'christmas_orth'};
+    if(m===0&&d===7) return {he:'חג המולד המוצדק', en:'Orthodox Christmas', isChag:true, key:'christmas_orth'};
+
     const date=new Date(y,m,d);
     const dayStr=new Intl.DateTimeFormat('en-US-u-ca-hebrew',{day:'numeric'}).format(date);
     const day=parseInt(dayStr,10);
     const mName=new Intl.DateTimeFormat('en-US-u-ca-hebrew',{month:'long'}).format(date);
 
-    if(mName==='Elul'&&day===29)return{he:'ערב ראש השנה',en:'Erev Rosh Hashanah'};
-    if(mName==='Tishri'&&day===1)return{he:'ראש השנה א׳',en:'Rosh Hashanah I'};
-    if(mName==='Tishri'&&day===2)return{he:'ראש השנה ב׳',en:'Rosh Hashanah II'};
-    if(mName==='Tishri'&&day===9)return{he:'ערב יום כיפור',en:'Erev Yom Kippur'};
-    if(mName==='Tishri'&&day===10)return{he:'יום כיפור',en:'Yom Kippur'};
-    if(mName==='Tishri'&&day===14)return{he:'ערב סוכות',en:'Erev Sukkot'};
-    if(mName==='Tishri'&&day===15)return{he:'סוכות',en:'Sukkot'};
-    if(mName==='Tishri'&&day===21)return{he:'הושענא רבה',en:'Hoshana Rabbah'};
-    if(mName==='Tishri'&&day===22)return{he:'שמחת תורה',en:'Simchat Torah'};
-    if(mName.startsWith('Adar')&&day===14)return{he:'פורים',en:'Purim'};
-    if(mName.startsWith('Adar')&&day===15)return{he:'שושן פורים',en:'Shushan Purim'};
-    if(mName==='Nisan'&&day===14)return{he:'ערב פסח',en:'Erev Pesach'};
-    if(mName==='Nisan'&&day===15)return{he:'פסח',en:'Pesach'};
-    if(mName==='Nisan'&&day===21)return{he:'שביעי של פסח',en:"Shvi'i Shel Pesach"};
-    if(mName==='Iyar'&&day===4)return{he:'יום הזיכרון',en:'Yom HaZikaron'};
-    if(mName==='Iyar'&&day===5)return{he:'יום העצמאות',en:'Independence Day'};
-    if(mName==='Sivan'&&day===5)return{he:'ערב שבועות',en:'Erev Shavuot'};
-    if(mName==='Sivan'&&day===6)return{he:'שבועות',en:'Shavuot'};
+    if(mName==='Elul'&&day===29)return{he:'ערב ראש השנה',en:'Erev Rosh Hashanah',isErev:true,key:'rosh_hashanah'};
+    if(mName==='Tishri'&&day===1)return{he:'ראש השנה א׳',en:'Rosh Hashanah I',isChag:true,key:'rosh_hashanah'};
+    if(mName==='Tishri'&&day===2)return{he:'ראש השנה ב׳',en:'Rosh Hashanah II',isChag:true,key:'rosh_hashanah'};
+    if(mName==='Tishri'&&day===9)return{he:'ערב יום כיפור',en:'Erev Yom Kippur',isErev:true,key:'yom_kippur'};
+    if(mName==='Tishri'&&day===10)return{he:'יום כיפור',en:'Yom Kippur',isChag:true,key:'yom_kippur'};
+    if(mName==='Tishri'&&day===14)return{he:'ערב סוכות',en:'Erev Sukkot',isErev:true,key:'sukkot'};
+    if(mName==='Tishri'&&day===15)return{he:'סוכות',en:'Sukkot',isChag:true,key:'sukkot'};
+    if(mName==='Tishri'&&day===21)return{he:'הושענא רבה',en:'Hoshana Rabbah',isErev:true,key:'sukkot'};
+    if(mName==='Tishri'&&day===22)return{he:'שמחת תורה',en:'Simchat Torah',isChag:true,key:'sukkot'};
+    if(mName==='Kislev'&&day>=25||mName==='Tevet'&&day<=2)return{he:'חנוכה',en:'Hanukkah',isChag:true,key:'hanukkah'};
+    if(mName.startsWith('Adar')&&day===14)return{he:'פורים',en:'Purim',isChag:true,key:'purim'};
+    if(mName.startsWith('Adar')&&day===15)return{he:'שושן פורים',en:'Shushan Purim',isChag:true,key:'purim'};
+    if(mName==='Nisan'&&day===14)return{he:'ערב פסח',en:'Erev Pesach',isErev:true,key:'pesach'};
+    if(mName==='Nisan'&&day===15)return{he:'פסח',en:'Pesach',isChag:true,key:'pesach'};
+    if(mName==='Nisan'&&day===21)return{he:'שביעי של פסח',en:"Shvi'i Shel Pesach",isChag:true,key:'pesach'};
+    if(mName==='Iyar'&&day===4)return{he:'יום הזיכרון',en:'Yom HaZikaron',isMemorial:true,key:'zikaron'};
+    if(mName==='Iyar'&&day===5)return{he:'יום העצמאות',en:'Independence Day',isChag:true,key:'atzmaut'};
+    if(mName==='Sivan'&&day===5)return{he:'ערב שבועות',en:'Erev Shavuot',isErev:true,key:'shavuot'};
+    if(mName==='Sivan'&&day===6)return{he:'שבועות',en:'Shavuot',isChag:true,key:'shavuot'};
   }catch(e){}
   return null;
 }
@@ -1138,6 +1232,7 @@ function renderSched(){
   const key=mk(vY,vM);
   const sc=getSched()[key]||{};
   document.getElementById('v-ttl').textContent=t(MHE[vM],MEN[vM])+' '+vY;
+  renderFestiveBanner();
   document.getElementById('v-grid').innerHTML=buildGrid(vY,vM,sc,false);
   renderLeg(); renderStats(sc); renderSessSummary();
   const hint = document.getElementById('scroll-hint');
@@ -1146,7 +1241,7 @@ function renderSched(){
 
 function buildGrid(y,m,data,ed){
   const docs=getDutyDocs();
-  const dh=(lang==='he'?DHE:DEN).map((d,i)=>`<div class="dhdr${i===5?' fh':''}">${d}</div>`).join('');
+  const dh=(lang==='he'?DHE:DEN).map((d,i)=>`<div class="dhdr${i===5?' fh':i===6?' sh':''}">${d}</div>`).join('');
   const first=new Date(y,m,1).getDay();
   const days=new Date(y,m+1,0).getDate();
   const conflicts=ed?getScheduleConflicts(y,m):[];
@@ -1156,15 +1251,20 @@ function buildGrid(y,m,data,ed){
   for(let i=0;i<first;i++)cells+=`<div class="${cls} em"></div>`;
   for(let d=1;d<=days;d++){
     const dow=new Date(y,m,d).getDay();
-    const isFri=dow===5;
+    const isFriShift=dow===5;
+    const hol=getIsraeliHoliday(y,m,d);
+    const isFriStyle=isFriShift||(hol&&hol.isErev);
+    const isSatStyle=dow===6||(hol&&hol.isChag);
     const isT=!ed&&y===today.getFullYear()&&m===today.getMonth()&&d===today.getDate();
     const dk=y+'-'+m+'-'+d;
-    const hol=getIsraeliHoliday(y,m,d);
-    const holBadge=hol?`<div class="hol-badge" title="${hol.en}">${hol.he}</div>`:'';
+    const holBadgeClass=hol?(hol.isChag||dow===6?' chag-badge':hol.isMemorial?' mem-badge':''):'';
+    const holBadge=hol?`<div class="hol-badge${holBadgeClass}" title="${hol.en}">${hol.he}</div>`:'';
     let c=cls;
-    if(isFri)c+=' fr';if(isT)c+=' mt';
+    if(isFriStyle)c+=' fr';
+    else if(isSatStyle)c+=' sa';
+    if(isT)c+=' mt';
     if(ed&&conflictDays.has(d))c+=' has-conflict';
-    if(isFri){
+    if(isFriShift){
       const id1=data[dk+'_1'],id2=data[dk+'_2'];
       const s1=chipH(docs,id1,t('עד 13:00','Until 13:00'),ed,`openDM('${dk}','1')`);
       const s2=chipH(docs,id2,t('אחרי 13:00','After 13:00'),ed,`openDM('${dk}','2')`);
@@ -1326,16 +1426,18 @@ function renderWishes(reload){
     si.textContent=who+t('מניעות נשמרו בעבר לחודש זה','Restrictions previously saved for this month');
   }else{si.style.display='none';}
 
-  const dh=(lang==='he'?DHE:DEN).map((d,i)=>`<div class="dhdr${i===5?' fh':''}">${d}</div>`).join('');
+  const dh=(lang==='he'?DHE:DEN).map((d,i)=>`<div class="dhdr${i===5?' fh':i===6?' sh':''}">${d}</div>`).join('');
   const first=new Date(wY,wM,1).getDay();
   const days=new Date(wY,wM+1,0).getDate();
   let cells='';
   for(let i=0;i<first;i++)cells+=`<div class="wc em"></div>`;
   for(let d=1;d<=days;d++){
     const dow=new Date(wY,wM,d).getDay();
-    const isFri=dow===5;
+    const hol=getIsraeliHoliday(wY,wM,d);
+    const isFri=dow===5||(hol&&hol.isErev);
+    const isSat=dow===6||(hol&&hol.isChag);
     const isOff=wDraft.has(d);
-    let c='wc';if(isFri)c+=' fr';if(isOff)c+=' off';
+    let c='wc';if(isFri)c+=' fr';else if(isSat)c+=' sa';if(isOff)c+=' off';
     cells+=`<div class="${c}" onclick="togW(${d})"><div class="dn">${d}</div>${isOff?'<div class="wbdg">✕</div>':''}</div>`;
   }
   document.getElementById('w-grid').innerHTML=dh+cells;
@@ -2182,15 +2284,136 @@ function doLogout(){
   document.getElementById('pg-schedule').classList.add('active');
 }
 
-['dm','de','lo','sm','hm'].forEach(id=>{
+['dm','de','lo','sm','hm','htm'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){
     if(e.target===this){
       if(id==='dm')closeDM();if(id==='de')closeDE();if(id==='lo')closeLO();
-      if(id==='sm')closeSM();if(id==='hm')closeHM();
+      if(id==='sm')closeSM();if(id==='hm')closeHM();if(id==='htm')closeHolidayTester();
     }
   });
 });
 
+// ═══ FESTIVE GREETINGS & HOLIDAY TESTER ═══
+let testHolidayKey = null, testCustomDateStr = null, bannerDismissed = false;
+
+function getGreetingConfig(dObj){
+  const y=dObj.getFullYear(), m=dObj.getMonth(), d=dObj.getDate(), dow=dObj.getDay(), hr=dObj.getHours();
+  // If month is December (11), congratulate on upcoming year (y + 1)
+  const nyYear = m === 11 ? y + 1 : y;
+
+  if(testHolidayKey){
+    switch(testHolidayKey){
+      case 'shabbat': return {key:'shabbat', icon:'🕯️', title:{he:'שבת שלום!', en:'Shabbat Shalom!'}, sub:{he:'שבת שלום ומבורכת, מנוחה ושלווה!', en:'Wishing you a peaceful and restful Shabbat.'}, bg:'linear-gradient(135deg, rgba(88,28,135,0.95), rgba(124,58,237,0.9))'};
+      case 'shavua_tov': return {key:'shavua_tov', icon:'🌟', title:{he:'שבוע טוב!', en:'Shavua Tov!'}, sub:{he:'שבוע טוב ומבורך, בסימן טוב והצלחה!', en:'Wishing you a successful and blessed new week!'}, bg:'linear-gradient(135deg, rgba(30,58,138,0.95), rgba(79,70,229,0.9))'};
+      case 'rosh_hashanah': return {key:'rosh_hashanah', icon:'🍎🍯', title:{he:'שנה טובה ומתוקה!', en:'Shana Tova U\'Metuka!'}, sub:{he:'שתתחדש עלינו שנה טובה ומתוקה כדבש!', en:'May you be blessed with a happy & sweet new year!'}, bg:'linear-gradient(135deg, rgba(180,83,9,0.95), rgba(217,119,6,0.9))'};
+      case 'yom_kippur': return {key:'yom_kippur', icon:'🕊️', title:{he:'גמר חתימה טובה!', en:'Gmar Chatimah Tova!'}, sub:{he:'גמר חתימה טובה וצום מועיל!', en:'Wishing you a meaningful and peaceful Yom Kippur.'}, bg:'linear-gradient(135deg, rgba(71,85,105,0.95), rgba(30,41,59,0.9))'};
+      case 'sukkot': return {key:'sukkot', icon:'🌿🍋', title:{he:'חג סוכות שמח!', en:'Chag Sukkot Sameach!'}, sub:{he:'חג סוכות שמח ומלא שמחה!', en:'Enjoy the joyous festival of Sukkot!'}, bg:'linear-gradient(135deg, rgba(21,128,61,0.95), rgba(161,98,7,0.9))'};
+      case 'hanukkah': return {key:'hanukkah', icon:'🕎✨', title:{he:'חג חנוכה שמח!', en:'Happy Hanukkah!'}, sub:{he:'חג אורים שמח ומלא אור ושמחה!', en:'May your days be filled with light and happiness!'}, bg:'linear-gradient(135deg, rgba(30,58,138,0.95), rgba(109,40,217,0.9))'};
+      case 'purim': return {key:'purim', icon:'🎭🥟', title:{he:'פורים שמח!', en:'Happy Purim!'}, sub:{he:'פורים שמח ומבדח, עד דלא ידע!', en:'Wishing you laughter, joy and delicious Hamantaschen!'}, bg:'linear-gradient(135deg, rgba(168,85,247,0.95), rgba(236,72,153,0.9))'};
+      case 'pesach': return {key:'pesach', icon:'🍷🫓', title:{he:'חג פסח כשר ושמח!', en:'Chag Pesach Sameach!'}, sub:{he:'חג פסח כשר ושמח לכל המשפחה!', en:'Wishing you a kosher and joyful Passover!'}, bg:'linear-gradient(135deg, rgba(147,51,234,0.95), rgba(192,38,211,0.9))'};
+      case 'atzmaut': return {key:'atzmaut', icon:'🇮🇱✨', title:{he:'חג עצמאות שמח!', en:'Happy Independence Day!'}, sub:{he:'יום עצמאות שמח למדינת ישראל!', en:'Celebrating Israel\'s Independence Day!'}, bg:'linear-gradient(135deg, rgba(2,132,199,0.95), rgba(29,78,216,0.9))'};
+      case 'shavuot': return {key:'shavuot', icon:'🌾🧀', title:{he:'חג שבועות שמח!', en:'Chag Shavuot Sameach!'}, sub:{he:'חג שבועות שמח, חג הקציר והביכורים!', en:'Wishing you a fruitful and joyful Shavuot!'}, bg:'linear-gradient(135deg, rgba(202,138,4,0.95), rgba(22,163,74,0.9))'};
+      case 'newyear': return {key:'newyear', icon:'🎆🎄', title:{he:'שנה אזרחית טובה! 🎆', en:'Happy New Year! 🎆'}, sub:{he:'מאחלים שנה אזרחית נפלאה, בריאות והצלחה!', en:'Wishing you a joyful, healthy & peaceful New Year!'}, bg:'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,58,138,0.9))', snow:true};
+      case 'christmas': return {key:'christmas', icon:'🎄✨', title:{he:'חג מולד שמח!', en:'Merry Christmas!'}, sub:{he:'ברכות חמות לחג שמח, שלום ושמחה!', en:'Warm wishes for peace, joy and prosperity!'}, bg:'linear-gradient(135deg, rgba(20,83,45,0.95), rgba(153,27,27,0.9))', snow:true};
+      case 'christmas_orth': return {key:'christmas_orth', icon:'🎄✨', title:{he:'חג מולד שמח!', en:'Merry Christmas!'}, sub:{he:'ברכות חמות לחג שמח, שלום ושמחה!', en:'Warm wishes for peace, joy and prosperity!'}, bg:'linear-gradient(135deg, rgba(20,83,45,0.95), rgba(153,27,27,0.9))', snow:true};
+    }
+  }
+
+  const hol=getIsraeliHoliday(y,m,d);
+  if(hol){
+    if(hol.key==='newyear') return {key:'newyear', icon:'🎆🎄', title:{he:'שנה אזרחית טובה! 🎆', en:'Happy New Year! 🎆'}, sub:{he:'מאחלים שנה אזרחית נפלאה, בריאות והצלחה!', en:'Wishing you a joyful, healthy & peaceful New Year!'}, bg:'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,58,138,0.9))', snow:true};
+    if(hol.key==='christmas'||hol.key==='christmas_orth') return {key:'christmas', icon:'🎄✨', title:{he:'חג מולד שמח!', en:'Merry Christmas!'}, sub:{he:'ברכות חמות לחג שמח, שלום ושמחה!', en:'Warm wishes for peace, joy and prosperity!'}, bg:'linear-gradient(135deg, rgba(20,83,45,0.95), rgba(153,27,27,0.9))', snow:true};
+    if(hol.key==='rosh_hashanah') return {key:'rosh_hashanah', icon:'🍎🍯', title:{he:'שנה טובה ומתוקה!', en:'Shana Tova U\'Metuka!'}, sub:{he:'שתתחדש עלינו שנה טובה ומתוקה כדבש!', en:'May you be blessed with a happy & sweet new year!'}, bg:'linear-gradient(135deg, rgba(180,83,9,0.95), rgba(217,119,6,0.9))'};
+    if(hol.key==='yom_kippur') return {key:'yom_kippur', icon:'🕊️', title:{he:'גמר חתימה טובה!', en:'Gmar Chatimah Tova!'}, sub:{he:'גמר חתימה טובה וצום מועיל!', en:'Wishing you a meaningful and peaceful Yom Kippur.'}, bg:'linear-gradient(135deg, rgba(71,85,105,0.95), rgba(30,41,59,0.9))'};
+    if(hol.key==='sukkot') return {key:'sukkot', icon:'🌿🍋', title:{he:'חג סוכות שמח!', en:'Chag Sukkot Sameach!'}, sub:{he:'חג סוכות שמח ומלא שמחה!', en:'Enjoy the joyous festival of Sukkot!'}, bg:'linear-gradient(135deg, rgba(21,128,61,0.95), rgba(161,98,7,0.9))'};
+    if(hol.key==='hanukkah') return {key:'hanukkah', icon:'🕎✨', title:{he:'חג חנוכה שמח!', en:'Happy Hanukkah!'}, sub:{he:'חג אורים שמח ומלא אור ושמחה!', en:'May your days be filled with light and happiness!'}, bg:'linear-gradient(135deg, rgba(30,58,138,0.95), rgba(109,40,217,0.9))'};
+    if(hol.key==='purim') return {key:'purim', icon:'🎭🥟', title:{he:'פורים שמח!', en:'Happy Purim!'}, sub:{he:'פורים שמח ומבדח, עד דלא ידע!', en:'Wishing you laughter, joy and delicious Hamantaschen!'}, bg:'linear-gradient(135deg, rgba(168,85,247,0.95), rgba(236,72,153,0.9))'};
+    if(hol.key==='pesach') return {key:'pesach', icon:'🍷🫓', title:{he:'חג פסח כשר ושמח!', en:'Chag Pesach Sameach!'}, sub:{he:'חג פסח כשר ושמח לכל המשפחה!', en:'Wishing you a kosher and joyful Passover!'}, bg:'linear-gradient(135deg, rgba(147,51,234,0.95), rgba(192,38,211,0.9))'};
+    if(hol.key==='atzmaut') return {key:'atzmaut', icon:'🇮🇱✨', title:{he:'חג עצמאות שמח!', en:'Happy Independence Day!'}, sub:{he:'יום עצמאות שמח למדינת ישראל!', en:'Celebrating Israel\'s Independence Day!'}, bg:'linear-gradient(135deg, rgba(2,132,199,0.95), rgba(29,78,216,0.9))'};
+    if(hol.key==='shavuot') return {key:'shavuot', icon:'🌾🧀', title:{he:'חג שבועות שמח!', en:'Chag Shavuot Sameach!'}, sub:{he:'חג שבועות שמח, חג הקציר והביכורים!', en:'Wishing you a fruitful and joyful Shavuot!'}, bg:'linear-gradient(135deg, rgba(202,138,4,0.95), rgba(22,163,74,0.9))'};
+  }
+
+  // Day of week fallback
+  if(dow===5 || (dow===6 && hr<19)) {
+    return {key:'shabbat', icon:'🕯️', title:{he:'שבת שלום!', en:'Shabbat Shalom!'}, sub:{he:'שבת שלום ומבורכת, מנוחה ושלווה!', en:'Wishing you a peaceful and restful Shabbat.'}, bg:'linear-gradient(135deg, rgba(88,28,135,0.95), rgba(124,58,237,0.9))'};
+  }
+  if((dow===6 && hr>=19) || (dow===0 && hr<12)) {
+    return {key:'shavua_tov', icon:'🌟', title:{he:'שבוע טוב!', en:'Shavua Tov!'}, sub:{he:'שבוע טוב ומבורך, בסימן טוב והצלחה!', en:'Wishing you a successful and blessed new week!'}, bg:'linear-gradient(135deg, rgba(30,58,138,0.95), rgba(79,70,229,0.9))'};
+  }
+
+  return null;
+}
+
+function renderFestiveBanner(){
+  const wrap=document.getElementById('festive-banner-wrap');
+  if(!wrap)return;
+  if(bannerDismissed && !testHolidayKey && !testCustomDateStr){wrap.innerHTML='';return;}
+  
+  let targetDate = new Date();
+  if(testCustomDateStr) targetDate = new Date(testCustomDateStr+'T12:00:00');
+  
+  const cfg = getGreetingConfig(targetDate);
+  if(!cfg){wrap.innerHTML='';return;}
+  
+  const isEn = lang==='en';
+  const ttl = isEn ? cfg.title.en : cfg.title.he;
+  const sub = isEn ? cfg.sub.en : cfg.sub.he;
+  const snowCap = cfg.snow ? '<div class="snow-cap-layer"></div>' : '';
+  const snowflakes = cfg.snow ? `<div class="snowflake-box">
+    <span class="snowflake" style="left:10%;animation-duration:3s">❄</span>
+    <span class="snowflake" style="left:30%;animation-duration:4s;animation-delay:1s">❄</span>
+    <span class="snowflake" style="left:55%;animation-duration:3.5s;animation-delay:.5s">❄</span>
+    <span class="snowflake" style="left:75%;animation-duration:4.5s">❄</span>
+    <span class="snowflake" style="left:90%;animation-duration:3.2s;animation-delay:1.5s">❄</span>
+  </div>` : '';
+  
+  wrap.innerHTML = `<div class="festive-banner" style="background:${cfg.bg}">
+    ${snowCap}${snowflakes}
+    <div class="festive-content">
+      <div class="festive-icon">${cfg.icon}</div>
+      <div class="festive-text">
+        <div class="art-greeting">${ttl}</div>
+        <div class="festive-sub">${sub}</div>
+      </div>
+    </div>
+    <button class="festive-btn-close" onclick="dismissFestiveBanner()" title="${isEn?'Close':'סגור'}">✕</button>
+  </div>`;
+}
+
+function dismissFestiveBanner(){
+  bannerDismissed = true;
+  renderFestiveBanner();
+}
+
+function openHolidayTester(){
+  document.getElementById('htm').classList.add('open');
+}
+function closeHolidayTester(){
+  document.getElementById('htm').classList.remove('open');
+}
+function setTestHoliday(key){
+  testHolidayKey = key;
+  testCustomDateStr = null;
+  bannerDismissed = false;
+  closeHolidayTester();
+  go('schedule', document.getElementById('nav-s'));
+}
+function onCustomTestDateChange(val){
+  if(!val)return;
+  testCustomDateStr = val;
+  testHolidayKey = null;
+  bannerDismissed = false;
+  closeHolidayTester();
+  go('schedule', document.getElementById('nav-s'));
+}
+function clearTestDate(){
+  testHolidayKey = null;
+  testCustomDateStr = null;
+  bannerDismissed = false;
+  document.getElementById('htm-custom-date').value = '';
+  closeHolidayTester();
+  go('schedule', document.getElementById('nav-s'));
+}
 // ═══ PDF EXPORT (schedule) ═══
 function exportPDF(){
   if(!window.jspdf){showToast('jsPDF not loaded','err');return}
