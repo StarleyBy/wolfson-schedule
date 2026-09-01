@@ -13,6 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Caveat:wght@600;700&family=Pacifico&family=Amatic+SC:wght@700&family=Secular+One&family=Varela+Round&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 /* ── TOKENS ── */
 :root{
@@ -631,7 +632,8 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
     <div class="mhdr">
       <div class="mtitle" id="v-ttl"></div>
       <div class="mhr">
-        <button class="bpdf" onclick="exportPDF()">📄 PDF</button>
+        <button class="bpdf" onclick="openExportModal('schedule_pdf')" title="PDF Report">📄 <span class="he">PDF</span><span class="en">PDF</span></button>
+        <button class="bpdf" onclick="openExportModal('schedule_img')" title="Image Export">📷 <span class="he">תמונה</span><span class="en">Image</span></button>
         <button class="ibtn" onclick="vMv(-1)">‹</button>
         <button class="ibtn" onclick="vMv(1)">›</button>
       </div>
@@ -707,7 +709,7 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
     </div>
     <div class="rpt-month-sel" id="rpt-months"></div>
     <div id="rpt-content"></div>
-    <button class="bpdf" onclick="exportReportPDF()" style="width:100%;justify-content:center;margin-top:4px">📄 <span class="he">ייצוא PDF</span><span class="en">Export PDF</span></button>
+    <button class="bpdf" onclick="openExportModal('report_pdf')" style="width:100%;justify-content:center;margin-top:4px">📄 <span class="he">ייצוא PDF ודשבורד</span><span class="en">Export Dashboard PDF</span></button>
   </div>
 
   <!-- YEARLY DASHBOARD (secretary/superadmin) -->
@@ -716,7 +718,7 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
     <div class="ibox"><span class="ibox-i">📈</span><span><span class="he">סיכום שנתי לכל רופא: תורנויות, בוקר, ססיות, חופשות ומחלה.</span><span class="en">Yearly totals per doctor: shifts, AM, sessions, days off and sick leave.</span></span></div>
     <div class="mpills" id="y-years"></div>
     <div id="y-content"></div>
-    <button class="bpdf" onclick="exportYearlyPDF()" style="width:100%;justify-content:center;margin-top:4px">📄 <span class="he">ייצוא PDF</span><span class="en">Export PDF</span></button>
+    <button class="bpdf" onclick="openExportModal('yearly_pdf')" style="width:100%;justify-content:center;margin-top:4px">📄 <span class="he">ייצוא דשבורד שנתי</span><span class="en">Export Yearly PDF</span></button>
   </div>
 
   <!-- DATA (superadmin) -->
@@ -897,6 +899,58 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
   <button class="bd" style="margin-top:4px;margin-bottom:10px" onclick="clearTestDate()"><span class="he">🔄 איפוס לתאריך כעת</span><span class="en">🔄 Reset to Current Date</span></button>
   <div class="mcanc" onclick="closeHolidayTester()"><span class="he">סגור</span><span class="en">Close</span></div>
 </div></div>
+
+<!-- EXPORT & SHARE MODAL SHEET -->
+<div class="overlay" id="modal-export-share">
+  <div class="msh" style="max-width:540px;margin:0 auto">
+    <div class="mhdl"></div>
+    <div class="mtm" id="export-share-title" style="text-align:center">
+      <span class="he">ייצוא ושיתוף דוח / לוח תורנויות</span>
+      <span class="en">Export & Share Report</span>
+    </div>
+    
+    <!-- Visual Preview Container -->
+    <div style="background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);padding:10px;margin-bottom:16px;text-align:center">
+      <div id="export-preview-container" style="min-height:180px;max-height:220px;overflow:hidden;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#1e293b;position:relative">
+        <div id="export-loading-spinner" style="padding:40px;color:var(--t2);font-weight:700">
+          ⏳ <span class="he">מכין תצוגה מקדימה ודשבורד...</span><span class="en">Preparing preview...</span>
+        </div>
+        <img id="export-preview-img" style="display:none;max-width:100%;max-height:220px;object-fit:contain;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.3)">
+      </div>
+      <div id="export-file-info" style="font-size:11px;color:var(--t3);margin-top:6px;font-weight:600"></div>
+    </div>
+
+    <!-- Action Buttons Grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <button class="bp" style="grid-column:span 2;background:linear-gradient(135deg,#3b82f6,#2563eb);display:flex;align-items:center;justify-content:center;gap:8px;padding:14px" onclick="doShareNative()">
+        <span style="font-size:18px">📱</span>
+        <span><span class="he">שתף לכל האפליקציות</span><span class="en">Share to Apps</span></span>
+      </button>
+      <button class="bsm pri" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px" onclick="doDownloadExport()">
+        <span>💾</span> <span><span class="he">הורד קובץ</span><span class="en">Download</span></span>
+      </button>
+      <button class="bsm" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;background:rgba(37,211,102,.15);border-color:#25D366;color:#25D366" onclick="doShareWhatsApp()">
+        <span>💬</span> <span>WhatsApp</span>
+      </button>
+      <button class="bsm" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;background:rgba(0,136,204,.15);border-color:#0088cc;color:#0088cc" onclick="doShareTelegram()">
+        <span>✈️</span> <span>Telegram</span>
+      </button>
+      <button class="bsm" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;background:rgba(234,67,53,.15);border-color:#ea4335;color:#ea4335" onclick="doShareEmail()">
+        <span>✉️</span> <span>Email</span>
+      </button>
+    </div>
+
+    <div class="mcanc" onclick="closeExportModal()">
+      <span class="he">ביטול / סגור</span><span class="en">Close</span>
+    </div>
+  </div>
+</div>
+
+<!-- HIDDEN SINGLE-PAGE DASHBOARD CONTAINER FOR CANVAS/PDF EXPORT -->
+<div id="pdf-dashboard-export-wrap" style="position:fixed;left:-9999px;top:0;width:1120px;z-index:-1000;pointer-events:none;opacity:0;overflow:hidden">
+  <div id="pdf-dashboard-export" style="width:1120px;background:#ffffff;color:#0f172a;font-family:'Heebo',sans-serif;padding:24px;box-sizing:border-box;direction:rtl;border-radius:12px">
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -2489,63 +2543,487 @@ function clearTestDate(){
   closeHolidayTester();
   go('schedule', document.getElementById('nav-s'));
 }
-// ═══ PDF EXPORT (schedule) ═══
-function exportPDF(){
-  if(!window.jspdf){showToast('jsPDF not loaded','err');return}
-  const{jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-  const sc=getSched()[mk(vY,vM)]||{};
-  const docs=getDutyDocs();
-  const mn=MEN[vM];
-  doc.setFont('helvetica','bold');doc.setFontSize(15);
-  doc.text('Wolfson Cardiac Surgery — '+mn+' '+vY,14,13);
-  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(120,120,120);
-  doc.text('Generated: '+new Date().toLocaleDateString('en-GB'),14,19);doc.setTextColor(0,0,0);
-  const cW=36,rH=11,sX=14,sY=24;
-  const hdrs=['Sun','Mon','Tue','Wed','Thu','Fri<13','Fri>13','Sat'];
-  hdrs.forEach((h,i)=>{
-    const col=i===5||i===6?[235,228,255]:[240,245,255];
-    doc.setFillColor(...col);doc.rect(sX+i*cW,sY,cW,rH,'F');
-    doc.setDrawColor(180,180,180);doc.rect(sX+i*cW,sY,cW,rH,'S');
-    doc.setFont('helvetica','bold');doc.setFontSize(8);
-    doc.text(h,sX+i*cW+cW/2,sY+7,{align:'center'});
-  });
-  const dNames=docs.reduce((acc,d)=>{acc[d.id]=d.en;return acc},{});
-  const first=new Date(vY,vM,1).getDay();
-  const daysInM=new Date(vY,vM+1,0).getDate();
-  let week=Array(8).fill(null),wn=0;
-  for(let i=0;i<first;i++)week[i]=null;
-  for(let d=1;d<=daysInM;d++){
-    const dow=new Date(vY,vM,d).getDay(),dk=vY+'-'+vM+'-'+d;
-    if(dow===5){
-      const i1=sc[dk+'_1'],i2=sc[dk+'_2'];
-      week[5]={d,l:i1!==undefined?dNames[i1]||'?':'-'};
-      week[6]={d,l:i2!==undefined?dNames[i2]||'?':'-'};
-    }else{const ci=dow===6?7:dow;week[ci]={d,l:sc[dk]!==undefined?dNames[sc[dk]]||'?':'-'};}
-    if(dow===6||d===daysInM){
-      const ry=sY+rH+(wn*rH);
-      week.forEach((cell,i)=>{
-        const col=i===5||i===6?[248,244,255]:[255,255,255];
-        doc.setFillColor(...col);doc.rect(sX+i*cW,ry,cW,rH,'F');
-        doc.setDrawColor(200,200,200);doc.rect(sX+i*cW,ry,cW,rH,'S');
-        if(cell){
-          doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(130,130,130);
-          doc.text(String(cell.d),sX+i*cW+1.5,ry+3.5);
-          doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(20,20,20);
-          doc.text(cell.l,sX+i*cW+cW/2,ry+8,{align:'center'});
-        }
-      });
-      wn++;week=Array(8).fill(null);
-    }
+// ═══════════════════════════════════════════════════
+// EXPORT & SHARE DASHBOARD (PDF & IMAGE WITH HEBREW SUPPORT)
+// ═══════════════════════════════════════════════════
+let currentExportState = {
+  type: null, // 'schedule_pdf', 'schedule_img', 'report_pdf', 'yearly_pdf'
+  file: null,
+  fileName: '',
+  mimeType: '',
+  summaryText: '',
+  blobUrl: null
+};
+
+function closeExportModal(){
+  const el = document.getElementById('modal-export-share');
+  if(el) el.classList.remove('open');
+  if(currentExportState.blobUrl){
+    URL.revokeObjectURL(currentExportState.blobUrl);
+    currentExportState.blobUrl = null;
   }
-  const cnt={};docs.forEach(d=>cnt[d.id]=0);
-  Object.values(sc).forEach(v=>{if(v!==undefined&&v!==null&&cnt[v]!==undefined)cnt[v]++});
-  const fy=sY+rH+(wn*rH)+8;
-  doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(60,60,60);
-  doc.text('Shift counts:',sX,fy);let fx=sX+28;
-  docs.forEach(d=>{doc.setFont('helvetica','normal');doc.text(d.en+': '+cnt[d.id],fx,fy);fx+=30;if(fx>272)fx=sX+28;});
-  doc.save('Wolfson_'+mn+'_'+vY+'.pdf');
-  showToast(t('PDF הורד ✓','PDF downloaded ✓'));
+}
+
+async function openExportModal(type){
+  currentExportState.type = type;
+  const modal = document.getElementById('modal-export-share');
+  const previewImg = document.getElementById('export-preview-img');
+  const spinner = document.getElementById('export-loading-spinner');
+  const fileInfo = document.getElementById('export-file-info');
+  
+  if(!modal || !previewImg || !spinner) return;
+
+  previewImg.style.display = 'none';
+  spinner.style.display = 'block';
+  fileInfo.textContent = '';
+  modal.classList.add('open');
+
+  try {
+    let year = vY, month = vM;
+    if(type === 'report_pdf'){ year = rptY; month = rptM; }
+    if(type === 'yearly_pdf'){ year = yYear; month = 0; }
+
+    const isImg = (type === 'schedule_img');
+    const ext = isImg ? 'png' : 'pdf';
+    const monthName = MEN[month] || '';
+    const baseName = type === 'yearly_pdf' ? `Wolfson_Yearly_${year}` : `Wolfson_Dashboard_${monthName}_${year}`;
+    const fileName = `${baseName}.${ext}`;
+    
+    currentExportState.fileName = fileName;
+    currentExportState.mimeType = isImg ? 'image/png' : 'application/pdf';
+
+    // 1. Render Dashboard HTML into hidden export div
+    const exportEl = document.getElementById('pdf-dashboard-export');
+    exportEl.innerHTML = buildSinglePageDashboardHTML(type, year, month);
+
+    // 2. Capture canvas using html2canvas (Scale 2 for high DPI crisp rendering)
+    if(typeof html2canvas === 'undefined'){
+      throw new Error(lang==='he'?'ספריית html2canvas לא נטענה':'html2canvas library not loaded');
+    }
+
+    const canvas = await html2canvas(exportEl, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      backgroundColor: '#ffffff'
+    });
+
+    const imgData = canvas.toDataURL('image/png', 1.0);
+    previewImg.src = imgData;
+    previewImg.style.display = 'block';
+    spinner.style.display = 'none';
+
+    // 3. Prepare File/Blob
+    let fileBlob = null;
+    if(isImg){
+      fileBlob = await new Promise(res => canvas.toBlob(res, 'image/png', 1.0));
+    } else {
+      if(!window.jspdf || !window.jspdf.jsPDF){
+        throw new Error('jsPDF library not loaded');
+      }
+      const { jsPDF } = window.jspdf;
+      // Orientation: landscape for monthly schedule dashboard, portrait for yearly report
+      const orient = (type === 'yearly_pdf') ? 'portrait' : 'landscape';
+      const pdf = new jsPDF({ orientation: orient, unit: 'mm', format: 'a4' });
+      const pWidth = pdf.internal.pageSize.getWidth();
+      const pHeight = pdf.internal.pageSize.getHeight();
+
+      // Fit image onto single A4 page
+      const imgProps = pdf.getImageProperties(imgData);
+      let renderW = pWidth;
+      let renderH = (imgProps.height * pWidth) / imgProps.width;
+      if(renderH > pHeight){
+        renderH = pHeight;
+        renderW = (imgProps.width * pHeight) / imgProps.height;
+      }
+      const posX = (pWidth - renderW) / 2;
+      const posY = (pHeight - renderH) / 2;
+
+      pdf.addImage(imgData, 'PNG', posX, posY, renderW, renderH);
+      fileBlob = pdf.output('blob');
+    }
+
+    currentExportState.file = new File([fileBlob], fileName, { type: currentExportState.mimeType });
+    if(currentExportState.blobUrl) URL.revokeObjectURL(currentExportState.blobUrl);
+    currentExportState.blobUrl = URL.createObjectURL(fileBlob);
+
+    // Build text summary for sharing
+    const periodStr = type === 'yearly_pdf' ? `${year}` : `${monthName} ${year}`;
+    currentExportState.summaryText = `📊 Wolfson Cardiac Surgery - ${periodStr}\n${t('דוח תורנויות וססיות','Shifts & Sessions Report')}`;
+    fileInfo.textContent = `${fileName} (${(fileBlob.size/1024).toFixed(0)} KB)`;
+
+  } catch(err){
+    console.error('Export error:', err);
+    spinner.textContent = '❌ ' + err.message;
+    showToast((lang==='he'?'שגיאה ביצירת הקובץ: ':'Error generating file: ') + err.message, 'err');
+  }
+}
+
+// ── SHARE ACTIONS ──
+async function doShareNative(){
+  if(!currentExportState.file){
+    showToast(t('הקובץ עדיין לא מוכן','File is not ready yet'), 'err');
+    return;
+  }
+  if(navigator.share && navigator.canShare && navigator.canShare({ files: [currentExportState.file] })){
+    try {
+      await navigator.share({
+        title: 'Wolfson CS Report',
+        text: currentExportState.summaryText,
+        files: [currentExportState.file]
+      });
+      showToast(t('שותף בהצלחה ✓','Shared successfully ✓'));
+    } catch(e){
+      if(e.name !== 'AbortError') showToast(e.message, 'err');
+    }
+  } else if(navigator.share){
+    try {
+      await navigator.share({
+        title: 'Wolfson CS Report',
+        text: currentExportState.summaryText,
+        url: window.location.href
+      });
+    } catch(e){
+      if(e.name !== 'AbortError') showToast(e.message, 'err');
+    }
+  } else {
+    showToast(t('שיתוף ישיר אינו נתמך בדפדפן זה. השתמש בכפתור הורד','Native share not supported on this browser. Use Download button'), 'err');
+  }
+}
+
+function doDownloadExport(){
+  if(!currentExportState.blobUrl){
+    showToast(t('הקובץ עדיין לא מוכן','File is not ready yet'), 'err');
+    return;
+  }
+  const a = document.createElement('a');
+  a.href = currentExportState.blobUrl;
+  a.download = currentExportState.fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  showToast(t('הקובץ הורד בהצלחה ✓','File downloaded successfully ✓'));
+}
+
+function doShareWhatsApp(){
+  const text = encodeURIComponent(currentExportState.summaryText + '\n' + window.location.href);
+  window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+}
+
+function doShareTelegram(){
+  const text = encodeURIComponent(currentExportState.summaryText);
+  const url = encodeURIComponent(window.location.href);
+  window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
+}
+
+function doShareEmail(){
+  const subject = encodeURIComponent(`Wolfson Cardiac Surgery Report - ${currentExportState.fileName}`);
+  const body = encodeURIComponent(currentExportState.summaryText + '\n\n' + window.location.href);
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+// ── HTML SINGLE-PAGE DASHBOARD GENERATOR ──
+// ── HTML SINGLE-PAGE DASHBOARD GENERATOR ──
+function buildSinglePageDashboardHTML(type, y, m){
+  const docs = getDutyDocs();
+  const allDocs = getDocs();
+  const sc = getSched()[mk(y, m)] || {};
+  const isEn = (lang === 'en');
+  
+  const mName = isEn ? (MEN[m] || '') : (MHE[m] || '');
+  const periodTitle = type === 'yearly_pdf' ? (isEn ? `Year ${y}` : `שנת ${y}`) : `${mName} ${y}`;
+  const todayStr = new Date().toLocaleDateString(isEn ? 'en-GB' : 'he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  // Department Title & Subtitle
+  const deptTitle = isEn ? 'Wolfson Medical Center — Cardiac Surgery Department' : 'מרכז רפואי וולפסון — מחלקת ניתוחי לב';
+  const rptSubtitle = isEn ? `Monthly Duty & Activity Report — ${periodTitle}` : `דוח תורנויות ופעילות חודשי — ${periodTitle}`;
+  const genDateLabel = isEn ? `Generated: ${todayStr}` : `הופק בתאריך: ${todayStr}`;
+
+  // Compute Stats
+  const daysInM = new Date(y, m + 1, 0).getDate();
+  const cntShifts = {}, cntAM = {};
+  docs.forEach(d => { cntShifts[d.id] = 0; cntAM[d.id] = 0; });
+
+  Object.entries(sc).forEach(([k, v]) => {
+    if(v !== undefined && v !== null && cntShifts[v] !== undefined){
+      if(k.endsWith('_1')) cntAM[v]++;
+      else cntShifts[v]++;
+    }
+  });
+  const totalShifts = Object.values(cntShifts).reduce((a, b) => a + b, 0);
+  const totalAM = Object.values(cntAM).reduce((a, b) => a + b, 0);
+
+  const monthSess = getSess().filter(s => sameMonth(s.date, y, m));
+  const monthToff = getToff().filter(t => sameMonth(t.date, y, m));
+
+  // Build Doctor Rows
+  const docRowsHTML = docs.map((d) => {
+    const sCnt = cntShifts[d.id] || 0;
+    const aCnt = cntAM[d.id] || 0;
+    const sessCnt = countSessForDoc(d.id, y, m);
+    const offCnt = countToffForDoc(d.id, y, m, 'off') + countToffForDoc(d.id, y, m, 'off_weekend');
+    const sickCnt = countToffForDoc(d.id, y, m, 'sick');
+    const dNameStr = isEn ? d.en : `${dn(d)} <span style="font-size:11px;color:#64748b">(${d.en})</span>`;
+
+    return `
+      <tr style="border-bottom:1px solid #e2e8f0;">
+        <td style="padding:7px 10px;font-weight:800;font-size:13px;color:#0f172a">${dNameStr}</td>
+        <td style="padding:7px 10px;text-align:center;font-weight:900;color:#2563eb;font-size:14px">${sCnt}</td>
+        <td style="padding:7px 10px;text-align:center;font-weight:700;color:#059669">${aCnt || '-'}</td>
+        <td style="padding:7px 10px;text-align:center;font-weight:700;color:#7c3aed">${sessCnt || '-'}</td>
+        <td style="padding:7px 10px;text-align:center;font-weight:700;color:#d97706">${offCnt || '-'}</td>
+        <td style="padding:7px 10px;text-align:center;font-weight:700;color:#dc2626">${sickCnt || '-'}</td>
+      </tr>
+    `;
+  }).join('');
+
+  // Build Calendar Grid HTML (EXACTLY 7 COLUMNS: Sun - Sat)
+  const hdrs = isEn 
+    ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    : ['א\'', 'ב\'', 'ג\'', 'ד\'', 'ה\'', 'ו\'', 'ש\''];
+    
+  const hdrsHTML = hdrs.map((h, i) => {
+    const isFriSat = i >= 5;
+    const bg = isFriSat ? '#f1f5f9' : '#e2e8f0';
+    return `<div style="background:${bg};padding:6px 2px;text-align:center;font-weight:900;font-size:11px;color:#1e293b;border-radius:4px">${h}</div>`;
+  }).join('');
+
+  const firstDow = new Date(y, m, 1).getDay();
+  let cells = [];
+  for(let i=0; i<firstDow; i++){
+    cells.push(`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;min-height:56px"></div>`);
+  }
+
+  const dNames = docs.reduce((acc,d)=>{acc[d.id] = isEn ? d.en : shortName(d); return acc;},{});
+
+  for(let d=1; d<=daysInM; d++){
+    const dow = new Date(y, m, d).getDay();
+    const dk = y + '-' + m + '-' + d;
+    const hol = getIsraeliHoliday(y, m, d);
+    const isSat = dow === 6;
+    const isFri = dow === 5;
+    const bg = isSat ? '#fff1f2' : (isFri ? '#faf5ff' : '#ffffff');
+
+    let cellContent = '';
+
+    if(dow === 5){
+      // Friday cell (AM + Duty Shift in 1 column)
+      const doc1 = sc[dk+'_1'] !== undefined ? dNames[sc[dk+'_1']] || '?' : '—';
+      const doc2 = sc[dk+'_2'] !== undefined ? dNames[sc[dk+'_2']] || '?' : '—';
+      const amLbl = isEn ? '☀ AM' : '☀ בוקר';
+      const shiftLbl = isEn ? '🌙 Shift' : '🌙 תורנות';
+      cellContent = `
+        <div style="font-size:9px;color:#64748b;margin-bottom:2px">${amLbl}: <b>${doc1}</b></div>
+        <div style="font-size:9px;color:#7c3aed;margin-bottom:2px">${shiftLbl}: <b>${doc2}</b></div>
+      `;
+    } else {
+      const docId = sc[dk];
+      const docName = docId !== undefined ? dNames[docId] || '?' : '—';
+      const idx = docId !== undefined ? docColorIdx(docId) : -1;
+      const chipColor = idx >= 0 ? 'background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe' : 'color:#94a3b8';
+      cellContent = `
+        <div style="padding:2px 4px;border-radius:4px;font-weight:800;font-size:11px;text-align:center;${chipColor}">${docName}</div>
+      `;
+    }
+
+    const holName = hol ? (isEn ? hol.en : hol.he) : '';
+    const holTag = hol ? `<div style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;font-size:9px;font-weight:800;border-radius:3px;padding:1px 3px;margin-top:2px;text-align:center;white-space:nowrap;overflow:hidden">${holName}</div>` : '';
+
+    cells.push(`
+      <div style="background:${bg};border:1px solid #cbd5e1;border-radius:6px;padding:4px;min-height:56px;display:flex;flex-direction:column;justify-content:space-between">
+        <div style="font-size:11px;font-weight:900;color:#475569;margin-bottom:2px">${d}</div>
+        <div>${cellContent}</div>
+        ${holTag}
+      </div>
+    `);
+  }
+
+  // Build Sessions Table
+  const sessRowsHTML = monthSess.length ? monthSess.map(s => {
+    const ben = s.beneficiaries.map(id => { const b = findBenef(id); return b ? (isEn ? b.en : dn(b)) : id; }).join(', ');
+    return `
+      <tr style="border-bottom:1px solid #e2e8f0">
+        <td style="padding:5px 8px;font-weight:800;font-size:11px;color:#0f172a">${s.date} ${s.caseNo ? '#'+s.caseNo : ''}</td>
+        <td style="padding:5px 8px;font-size:11px;color:#334155">${s.procedure || '—'}</td>
+        <td style="padding:5px 8px;font-size:11px;font-weight:700;color:#6d28d9">${ben}</td>
+      </tr>
+    `;
+  }).join('') : `<tr><td colspan="3" style="padding:8px;text-align:center;color:#94a3b8;font-size:11px">${isEn ? 'No sessions this month' : 'אין ססיות החודש'}</td></tr>`;
+
+  // Build Time Off Table
+  const toffRowsHTML = monthToff.length ? monthToff.map(tOff => {
+    const doc = allDocs.find(x => x.id === tOff.docId);
+    const docName = doc ? (isEn ? doc.en : dn(doc)) : '?';
+    let typeLbl = '';
+    if(tOff.type === 'sick') typeLbl = isEn ? '🩹 Sick Leave' : '🩹 מחלה';
+    else if(tOff.type === 'off_weekend') typeLbl = isEn ? '🏖️ Weekend Off' : '🏖️ חופש סופ״ש';
+    else typeLbl = isEn ? '🏖️ Day Off' : '🏖️ חופש';
+
+    return `
+      <tr style="border-bottom:1px solid #e2e8f0">
+        <td style="padding:5px 8px;font-weight:800;font-size:11px;color:#0f172a">${tOff.date}</td>
+        <td style="padding:5px 8px;font-size:11px;color:#334155">${docName}</td>
+        <td style="padding:5px 8px;font-size:11px;font-weight:700;color:#be123c">${typeLbl}</td>
+      </tr>
+    `;
+  }).join('') : `<tr><td colspan="3" style="padding:8px;text-align:center;color:#94a3b8;font-size:11px">${isEn ? 'No time off this month' : 'אין חופשות החודש'}</td></tr>`;
+
+  // UI Strings
+  const kpiDays = isEn ? '🗓️ Days in Month' : '🗓️ ימים בחודש';
+  const kpiShifts = isEn ? '🩺 Duty Shifts' : '🩺 תורנויות';
+  const kpiAM = isEn ? '☀ AM Shifts' : '☀ משמרות בוקר';
+  const kpiSess = isEn ? '⚡ Commercial Sessions' : '⚡ ססיות מסחריות';
+  const kpiOff = isEn ? '🏖️/🩹 Off & Sick' : '🏖️/🩹 חופשות ומחלה';
+
+  const docTblTitle = isEn ? '👨‍⚕️ Duty Doctors Summary' : '👨‍⚕️ סיכום רופאים תורנים';
+  const docHdrName = isEn ? 'Doctor' : 'רופא';
+  const docHdrShifts = isEn ? 'Shifts' : 'תורנויות';
+  const docHdrAM = isEn ? 'AM' : 'בוקר';
+  const docHdrSess = isEn ? 'Sessions' : 'ססיות';
+  const docHdrOff = isEn ? 'Off' : 'חופש';
+  const docHdrSick = isEn ? 'Sick' : 'מחלה';
+
+  const schedTblTitle = isEn ? '📅 Monthly Schedule (Holidays & Weekends)' : '📅 לוח תורנויות חודשי (כולל חגים וסופי שבוע)';
+
+  const sessTblTitle = isEn ? '⚡ Commercial Sessions Breakdown' : '⚡ פירוט ססיות מסחריות החודש';
+  const sessHdrDate = isEn ? 'Date / Case #' : 'תאריך/מקרה';
+  const sessHdrProc = isEn ? 'Procedure' : 'פרוצדורה';
+  const sessHdrDoc = isEn ? 'Participants' : 'משתתפים';
+
+  const toffTblTitle = isEn ? '🏖️ Time Off & Sick Leave Breakdown' : '🏖️ פירוט חופשות ומחלות';
+  const toffHdrDate = isEn ? 'Date' : 'תאריך';
+  const toffHdrDoc = isEn ? 'Doctor' : 'רופא';
+  const toffHdrType = isEn ? 'Type' : 'סוג';
+
+  const dirAttr = isEn ? 'ltr' : 'rtl';
+  const alignRight = isEn ? 'left' : 'right';
+
+  return `
+    <div style="background:#ffffff;color:#0f172a;font-family:'Heebo',sans-serif;direction:${dirAttr}">
+      <!-- HEADER BANNER -->
+      <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2.5px solid #2563eb;padding-bottom:14px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;box-shadow:0 4px 12px rgba(37,99,235,0.3)">
+            🫀
+          </div>
+          <div>
+            <h1 style="font-size:20px;font-weight:900;color:#0f172a;margin:0;line-height:1.2">${deptTitle}</h1>
+            <div style="font-size:13px;font-weight:700;color:#2563eb;margin-top:2px">${rptSubtitle}</div>
+          </div>
+        </div>
+        <div style="text-align:${isEn ? 'right' : 'left'}">
+          <div style="background:#f1f5f9;border:1px solid #cbd5e1;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:800;color:#475569">
+            Wolfson CS Dashboard
+          </div>
+          <div style="font-size:10px;color:#94a3b8;margin-top:4px">${genDateLabel}</div>
+        </div>
+      </div>
+
+      <!-- KPI METRIC CARDS ROW -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px">
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 12px;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:#1d4ed8">${daysInM}</div>
+          <div style="font-size:11px;font-weight:800;color:#3b82f6;margin-top:2px">${kpiDays}</div>
+        </div>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:#15803d">${totalShifts}</div>
+          <div style="font-size:11px;font-weight:800;color:#16a34a;margin-top:2px">${kpiShifts}</div>
+        </div>
+        <div style="background:#fdf4ff;border:1px solid #f5d0fe;border-radius:10px;padding:10px 12px;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:#7e22ce">${totalAM}</div>
+          <div style="font-size:11px;font-weight:800;color:#9333ea;margin-top:2px">${kpiAM}</div>
+        </div>
+        <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:10px;padding:10px 12px;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:#6b21a8">${monthSess.length}</div>
+          <div style="font-size:11px;font-weight:800;color:#7c3aed;margin-top:2px">${kpiSess}</div>
+        </div>
+        <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:10px;padding:10px 12px;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:#be123c">${monthToff.length}</div>
+          <div style="font-size:11px;font-weight:800;color:#e11d48;margin-top:2px">${kpiOff}</div>
+        </div>
+      </div>
+
+      <!-- MAIN DASHBOARD CONTENT GRID (2 COLUMNS) -->
+      <div style="display:grid;grid-template-columns:1.1fr 1.9fr;gap:14px;margin-bottom:16px">
+        <!-- DOCTOR SUMMARY TABLE -->
+        <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;padding:12px">
+          <div style="font-size:13px;font-weight:900;color:#0f172a;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+            <span>👨‍⚕️</span> <span>${docTblTitle}</span>
+          </div>
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="background:#e2e8f0;font-size:11px;font-weight:800;color:#334155">
+                <th style="padding:6px 8px;text-align:${alignRight}">${docHdrName}</th>
+                <th style="padding:6px 8px;text-align:center">${docHdrShifts}</th>
+                <th style="padding:6px 8px;text-align:center">${docHdrAM}</th>
+                <th style="padding:6px 8px;text-align:center">${docHdrSess}</th>
+                <th style="padding:6px 8px;text-align:center">${docHdrOff}</th>
+                <th style="padding:6px 8px;text-align:center">${docHdrSick}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${docRowsHTML}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- MONTHLY SCHEDULE GRID -->
+        <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;padding:12px">
+          <div style="font-size:13px;font-weight:900;color:#0f172a;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+            <span>📅</span> <span>${schedTblTitle}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px">
+            ${hdrsHTML}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+            ${cells.join('')}
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM DETAILS BREAKDOWN (SESSIONS & TIMEOFF) -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <!-- SESSIONS DETAILS -->
+        <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:10px">
+          <div style="font-size:12px;font-weight:900;color:#6d28d9;margin-bottom:6px;display:flex;align-items:center;gap:6px">
+            <span>⚡</span> <span>${sessTblTitle}</span>
+          </div>
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="background:#e9d5ff;font-size:10px;font-weight:800;color:#581c87">
+                <th style="padding:4px 6px;text-align:${alignRight}">${sessHdrDate}</th>
+                <th style="padding:4px 6px;text-align:${alignRight}">${sessHdrProc}</th>
+                <th style="padding:4px 6px;text-align:${alignRight}">${sessHdrDoc}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${sessRowsHTML}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- TIMEOFF DETAILS -->
+        <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:10px">
+          <div style="font-size:12px;font-weight:900;color:#be123c;margin-bottom:6px;display:flex;align-items:center;gap:6px">
+            <span>🏖️</span> <span>${toffTblTitle}</span>
+          </div>
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="background:#fecdd3;font-size:10px;font-weight:800;color:#881337">
+                <th style="padding:4px 6px;text-align:${alignRight}">${toffHdrDate}</th>
+                <th style="padding:4px 6px;text-align:${alignRight}">${toffHdrDoc}</th>
+                <th style="padding:4px 6px;text-align:${alignRight}">${toffHdrType}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${toffRowsHTML}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 // ═══ TOAST ═══
