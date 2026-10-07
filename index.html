@@ -1039,7 +1039,7 @@ function getIsraeliHoliday(y,m,d){
     if(m===0&&d===6) return {he:'ערב חג המולד המוצדק', en:'Orthodox Christmas Eve', isErev:true, key:'christmas_orth'};
     if(m===0&&d===7) return {he:'חג המולד המוצדק', en:'Orthodox Christmas', isChag:true, key:'christmas_orth'};
 
-    const date=new Date(y,m,d);
+    const date=new Date(y,m,d,12,0,0);
     const dayStr=new Intl.DateTimeFormat('en-US-u-ca-hebrew',{day:'numeric'}).format(date);
     const day=parseInt(dayStr,10);
     const mName=new Intl.DateTimeFormat('en-US-u-ca-hebrew',{month:'long'}).format(date);
@@ -1067,14 +1067,24 @@ function getIsraeliHoliday(y,m,d){
   return null;
 }
 
+function formatLocalDate(d){
+  const dt=d||new Date();
+  const y=dt.getFullYear();
+  const m=String(dt.getMonth()+1).padStart(2,'0');
+  const day=String(dt.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
 function getDatesInRange(startStr,endStr){
   const dates=[];
   if(!startStr)return dates;
   if(!endStr||endStr<startStr)endStr=startStr;
-  let curr=new Date(startStr+'T00:00:00');
-  const end=new Date(endStr+'T00:00:00');
+  const[sY,sM,sD]=startStr.split('-').map(Number);
+  const[eY,eM,eD]=endStr.split('-').map(Number);
+  let curr=new Date(sY,sM-1,sD,12,0,0);
+  const end=new Date(eY,eM-1,eD,12,0,0);
   while(curr<=end){
-    dates.push(curr.toISOString().slice(0,10));
+    dates.push(formatLocalDate(curr));
     curr.setDate(curr.getDate()+1);
   }
   return dates;
@@ -1091,7 +1101,7 @@ function getScheduleConflicts(y,m){
   for(let d=1;d<=daysInM;d++){
     const dateStr=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const dk=y+'-'+m+'-'+d;
-    const dow=new Date(y,m,d).getDay();
+    const dow=new Date(y,m,d,12,0,0).getDay();
 
     const dutyDocIds=new Set();
     if(dow===5){
@@ -1321,7 +1331,7 @@ function buildGrid(y,m,data,ed){
   let cells='';
   for(let i=0;i<first;i++)cells+=`<div class="${cls} em"></div>`;
   for(let d=1;d<=days;d++){
-    const dow=new Date(y,m,d).getDay();
+    const dow=new Date(y,m,d,12,0,0).getDay();
     const isFriShift=dow===5;
     const hol=getIsraeliHoliday(y,m,d);
     const isFriStyle=isFriShift||(hol&&hol.isErev);
@@ -1503,7 +1513,7 @@ function renderWishes(reload){
   let cells='';
   for(let i=0;i<first;i++)cells+=`<div class="wc em"></div>`;
   for(let d=1;d<=days;d++){
-    const dow=new Date(wY,wM,d).getDay();
+    const dow=new Date(wY,wM,d,12,0,0).getDay();
     const hol=getIsraeliHoliday(wY,wM,d);
     const isFri=dow===5||(hol&&hol.isErev);
     const isSat=dow===6||(hol&&hol.isChag);
@@ -1607,7 +1617,7 @@ function openSM(forRequest){
   document.getElementById('sm-ttl').textContent = forRequest
     ? t('בקשת ססיה (טעון אישור אדמין)','Request Session (needs admin approval)')
     : t('הוספת ססיה','Add Session');
-  document.getElementById('sm-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('sm-date').value=formatLocalDate(new Date());
   document.getElementById('sm-case').value='';
   const procSel=document.getElementById('sm-proc');
   procSel.innerHTML=`<option value="">—</option><option value="CABG">CABG</option><option value="Valve">Valve</option><option value="CABG+Valve">CABG+Valve</option><option value="Other">${t('אחר','Other')}</option>`;
@@ -1676,7 +1686,7 @@ function saveSessionModal(){
     const y=+pts[0], m=+pts[1]-1, d=+pts[2];
     const dk=y+'-'+m+'-'+d;
     const sched=getSched()[mk(y,m)]||{};
-    const dow=new Date(y,m,d).getDay();
+    const dow=new Date(y,m,d,12,0,0).getDay();
     const dutyId=dow===5?sched[dk+'_2']:sched[dk];
     if(dutyId!==undefined&&dutyId!==null){
       const conflictBenefs=Array.from(smBenefSel).filter(bId=>String(bId)===String(dutyId));
@@ -1732,7 +1742,7 @@ function openHM(forRequest){
     `<option value="off">${t('יום חופש','Day Off')}</option>`+
     `<option value="off_weekend">${t('חופש אחרי תורנות סופ״ש','Off after weekend duty')}</option>`+
     `<option value="sick">${t('מחלה','Sick Leave')}</option>`;
-  document.getElementById('hm-date-start').value=new Date().toISOString().slice(0,10);
+  document.getElementById('hm-date-start').value=formatLocalDate(new Date());
   document.getElementById('hm-date-end').value='';
   const docSel=document.getElementById('hm-doc');
   if(forRequest){
@@ -1755,13 +1765,20 @@ function saveHMModal(){
   const docId=+document.getElementById('hm-doc').value;
   const type=document.getElementById('hm-type').value;
   const dates=getDatesInRange(startStr,endStr);
+  const existingToff=getToff().filter(x=>String(x.docId)===String(docId));
 
   for(const dStr of dates){
+    const dup=existingToff.find(x=>x.date===dStr);
+    if(dup){
+      const doc=getDocs().find(x=>x.id===docId);
+      showErr('hm-err',t('התנגשות: '+dn(doc)+' כבר רשום כ'+toffTypeLabel(dup.type)+' ב-'+dStr,'Conflict: '+(doc?dn(doc):'Doctor')+' already has '+toffTypeLabel(dup.type)+' on '+dStr));
+      return;
+    }
     const pts=dStr.split('-');
     const y=+pts[0], m=+pts[1]-1, d=+pts[2];
     const dk=y+'-'+m+'-'+d;
     const sched=getSched()[mk(y,m)]||{};
-    const dow=new Date(y,m,d).getDay();
+    const dow=new Date(y,m,d,12,0,0).getDay();
     const dutyId=dow===5?sched[dk+'_2']:sched[dk];
     if(dutyId!==undefined&&dutyId!==null&&String(dutyId)===String(docId)){
       const doc=getDocs().find(x=>x.id===docId);
@@ -1892,8 +1909,8 @@ let yYear=today.getFullYear();
 function renderYearly(){
   const years=new Set([today.getFullYear()]);
   Object.keys(getSched()).forEach(k=>years.add(+k.split('-')[0]));
-  getSess().forEach(s=>years.add(new Date(s.date+'T00:00:00').getFullYear()));
-  getToff().forEach(h=>years.add(new Date(h.date+'T00:00:00').getFullYear()));
+  getSess().forEach(s=>{ if(s.date){ const y=+s.date.split('-')[0]; if(y) years.add(y); } });
+  getToff().forEach(h=>{ if(h.date){ const y=+h.date.split('-')[0]; if(y) years.add(y); } });
   const sorted=Array.from(years).sort((a,b)=>b-a);
   const yEl=document.getElementById('y-years'); if(!yEl)return;
   yEl.innerHTML=sorted.map(y=>`<div class="mpill ${y===yYear?'ac':''}" onclick="selYear(${y})">${y}</div>`).join('');
