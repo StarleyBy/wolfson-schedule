@@ -709,7 +709,10 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh
     </div>
     <div class="rpt-month-sel" id="rpt-months"></div>
     <div id="rpt-content"></div>
-    <button class="bpdf" onclick="openExportModal('report_pdf')" style="width:100%;justify-content:center;margin-top:4px">📄 <span class="he">ייצוא PDF ודשבורד</span><span class="en">Export Dashboard PDF</span></button>
+    <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+      <button class="bpdf" onclick="openExportModal('month_schedule_pdf')" style="flex:1;min-width:200px;justify-content:center;background:var(--s2);border-color:var(--acc);color:var(--acc2);font-weight:800">📅 <span class="he">ייצוא לוח תורנויות בלבד (רוחבי)</span><span class="en">Export Schedule Only (Landscape)</span></button>
+      <button class="bpdf" onclick="openExportModal('report_pdf')" style="flex:1;min-width:200px;justify-content:center">📊 <span class="he">ייצוא דשבורד ודוחות</span><span class="en">Export Full Dashboard</span></button>
+    </div>
   </div>
 
   <!-- YEARLY DASHBOARD (secretary/superadmin) -->
@@ -2597,13 +2600,15 @@ async function openExportModal(type){
 
   try {
     let year = vY, month = vM;
-    if(type === 'report_pdf'){ year = rptY; month = rptM; }
+    if(type === 'report_pdf' || type === 'month_schedule_pdf'){ year = rptY; month = rptM; }
     if(type === 'yearly_pdf'){ year = yYear; month = 0; }
 
     const isImg = (type === 'schedule_img');
     const ext = isImg ? 'png' : 'pdf';
     const monthName = MEN[month] || '';
-    const baseName = type === 'yearly_pdf' ? `Wolfson_Yearly_${year}` : `Wolfson_Dashboard_${monthName}_${year}`;
+    let baseName = `Wolfson_Dashboard_${monthName}_${year}`;
+    if(type === 'yearly_pdf') baseName = `Wolfson_Yearly_${year}`;
+    else if(type === 'month_schedule_pdf') baseName = `Wolfson_Schedule_${monthName}_${year}`;
     const fileName = `${baseName}.${ext}`;
     
     currentExportState.fileName = fileName;
@@ -2611,7 +2616,11 @@ async function openExportModal(type){
 
     // 1. Render Dashboard HTML into hidden export div
     const exportEl = document.getElementById('pdf-dashboard-export');
-    exportEl.innerHTML = buildSinglePageDashboardHTML(type, year, month);
+    if(type === 'month_schedule_pdf'){
+      exportEl.innerHTML = buildMonthlyScheduleOnlyHTML(year, month);
+    } else {
+      exportEl.innerHTML = buildSinglePageDashboardHTML(type, year, month);
+    }
 
     // 2. Capture canvas using html2canvas (Scale 2 for high DPI crisp rendering)
     if(typeof html2canvas === 'undefined'){
@@ -2640,7 +2649,7 @@ async function openExportModal(type){
         throw new Error('jsPDF library not loaded');
       }
       const { jsPDF } = window.jspdf;
-      // Orientation: landscape for monthly schedule dashboard, portrait for yearly report
+      // Orientation: landscape for monthly schedule dashboard & schedule only, portrait for yearly report
       const orient = (type === 'yearly_pdf') ? 'portrait' : 'landscape';
       const pdf = new jsPDF({ orientation: orient, unit: 'mm', format: 'a4' });
       const pWidth = pdf.internal.pageSize.getWidth();
@@ -2667,7 +2676,11 @@ async function openExportModal(type){
 
     // Build text summary for sharing
     const periodStr = type === 'yearly_pdf' ? `${year}` : `${monthName} ${year}`;
-    currentExportState.summaryText = `📊 Wolfson Cardiac Surgery - ${periodStr}\n${t('דוח תורנויות וססיות','Shifts & Sessions Report')}`;
+    if(type === 'month_schedule_pdf'){
+      currentExportState.summaryText = `📅 Wolfson Cardiac Surgery - ${periodStr}\n${t('לוח תורנויות חודשי','Monthly Duty Schedule')}`;
+    } else {
+      currentExportState.summaryText = `📊 Wolfson Cardiac Surgery - ${periodStr}\n${t('דוח תורנויות וססיות','Shifts & Sessions Report')}`;
+    }
     fileInfo.textContent = `${fileName} (${(fileBlob.size/1024).toFixed(0)} KB)`;
 
   } catch(err){
@@ -2740,7 +2753,194 @@ function doShareEmail(){
   window.location.href = `mailto:?subject=${subject}&body=${body}`;
 }
 
-// ── HTML SINGLE-PAGE DASHBOARD GENERATOR ──
+// ── HTML MONTHLY SCHEDULE ONLY GENERATOR (LANDSCAPE) ──
+function buildMonthlyScheduleOnlyHTML(y, m){
+  const docs = getDutyDocs();
+  const sc = getSched()[mk(y, m)] || {};
+  const isEn = (lang === 'en');
+  const dirAttr = isEn ? 'ltr' : 'rtl';
+  
+  const mName = isEn ? (MEN[m] || '') : (MHE[m] || '');
+  const periodTitle = `${mName} ${y}`;
+  const todayStr = new Date().toLocaleDateString(isEn ? 'en-GB' : 'he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  const deptTitle = isEn ? 'Wolfson Medical Center — Cardiac Surgery Department' : 'מרכז רפואי וולפסון — מחלקת ניתוחי לב';
+  const schedSubtitle = isEn ? `Monthly Duty Schedule — ${periodTitle}` : `לוח תורנויות חודשי — ${periodTitle}`;
+  const genDateLabel = isEn ? `Generated: ${todayStr}` : `הופק בתאריך: ${todayStr}`;
+  const legendTitle = isEn ? 'Duty Doctors Legend & Color Codes' : 'מקרא רופאים תורנים וצבעי זיהוי';
+
+  // Palette array for distinct chip styling
+  const palette = [
+    { bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe' }, // blue
+    { bg: '#ecfdf5', text: '#047857', border: '#a7f3d0' }, // emerald
+    { bg: '#fffbeb', text: '#b45309', border: '#fde68a' }, // amber
+    { bg: '#fef2f2', text: '#b91c1c', border: '#fecaca' }, // red
+    { bg: '#faf5ff', text: '#6d28d9', border: '#e9d5ff' }, // purple
+    { bg: '#fdf2f8', text: '#be185d', border: '#fbcfe8' }, // pink
+    { bg: '#f0fdfa', text: '#0f766e', border: '#99f6e4' }, // teal
+    { bg: '#fff7ed', text: '#c2410c', border: '#fed7aa' }, // orange
+    { bg: '#eef2ff', text: '#4338ca', border: '#c7d2fe' }, // indigo
+    { bg: '#fefce8', text: '#a16207', border: '#fef08a' }  // yellow
+  ];
+
+  function getDocStyle(dId){
+    if(dId === undefined || dId === null) return null;
+    const idx = docColorIdx(dId);
+    return palette[idx % palette.length];
+  }
+
+  const dNames = docs.reduce((acc, d) => {
+    acc[d.id] = isEn ? d.en : shortName(d);
+    return acc;
+  }, {});
+
+  const daysInM = new Date(y, m + 1, 0).getDate();
+
+  // Headers: Sun - Sat
+  const hdrs = isEn 
+    ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    : ['ראשון (א\')', 'שני (ב\')', 'שלישי (ג\')', 'רביעי (ד\')', 'חמישי (ה\')', 'שישי (ו\')', 'שבת'];
+    
+  const hdrsHTML = hdrs.map((h, i) => {
+    const isFri = (i === 5);
+    const isSat = (i === 6);
+    const bg = isSat ? '#ffe4e6' : (isFri ? '#f3e8ff' : '#e2e8f0');
+    const color = isSat ? '#9f1239' : (isFri ? '#6b21a8' : '#1e293b');
+    return `<div style="background:${bg};color:${color};padding:8px 4px;text-align:center;font-weight:900;font-size:12px;border-radius:6px;border:1px solid #cbd5e1">${h}</div>`;
+  }).join('');
+
+  const firstDow = new Date(y, m, 1).getDay();
+  let cells = [];
+  for(let i = 0; i < firstDow; i++){
+    cells.push(`<div style="background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;min-height:92px"></div>`);
+  }
+
+  for(let d = 1; d <= daysInM; d++){
+    const dow = new Date(y, m, d).getDay();
+    const dk = `${y}-${m}-${d}`;
+    const hol = getIsraeliHoliday(y, m, d);
+    const isSat = dow === 6;
+    const isFri = dow === 5;
+    const bg = isSat ? '#fff1f2' : (isFri ? '#faf5ff' : '#ffffff');
+    const borderColor = isSat ? '#fecdd3' : (isFri ? '#e9d5ff' : '#cbd5e1');
+
+    let cellContent = '';
+
+    if(dow === 5){
+      // Friday: Morning AM + On-call Duty
+      const doc1Id = sc[dk + '_1'];
+      const doc2Id = sc[dk + '_2'];
+      const doc1 = doc1Id !== undefined ? dNames[doc1Id] || '?' : '—';
+      const doc2 = doc2Id !== undefined ? dNames[doc2Id] || '?' : '—';
+      const sty1 = getDocStyle(doc1Id);
+      const sty2 = getDocStyle(doc2Id);
+      
+      const amLbl = isEn ? '☀ AM' : '☀ בוקר';
+      const shiftLbl = isEn ? '🌙 Duty' : '🌙 תורנות';
+
+      const chip1Style = sty1 
+        ? `background:${sty1.bg};color:${sty1.text};border:1px solid ${sty1.border};`
+        : 'background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;';
+      const chip2Style = sty2 
+        ? `background:${sty2.bg};color:${sty2.text};border:1.5px solid ${sty2.border};font-weight:900;`
+        : 'background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;';
+
+      cellContent = `
+        <div style="margin-bottom:4px;padding:3px 6px;border-radius:5px;${chip1Style}display:flex;align-items:center;justify-content:space-between;font-size:11px">
+          <span style="font-size:10px;font-weight:700">${amLbl}</span>
+          <b style="font-size:11px">${doc1}</b>
+        </div>
+        <div style="padding:3px 6px;border-radius:5px;${chip2Style}display:flex;align-items:center;justify-content:space-between;font-size:11px">
+          <span style="font-size:10px;font-weight:700">${shiftLbl}</span>
+          <b style="font-size:11px">${doc2}</b>
+        </div>
+      `;
+    } else {
+      const docId = sc[dk];
+      const docName = docId !== undefined ? dNames[docId] || '?' : '—';
+      const sty = getDocStyle(docId);
+      const chipStyle = sty 
+        ? `background:${sty.bg};color:${sty.text};border:1.5px solid ${sty.border};` 
+        : 'background:#f1f5f9;color:#94a3b8;border:1px solid #cbd5e1;';
+
+      cellContent = `
+        <div style="padding:6px 4px;border-radius:6px;font-weight:900;font-size:13px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,0.04);${chipStyle}">
+          ${docName}
+        </div>
+      `;
+    }
+
+    const holName = hol ? (isEn ? hol.en : hol.he) : '';
+    const holTag = hol ? `<div style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;font-size:9.5px;font-weight:800;border-radius:4px;padding:2px 4px;margin-top:4px;text-align:center;white-space:nowrap;overflow:hidden">${holName}</div>` : '';
+
+    cells.push(`
+      <div style="background:${bg};border:1.5px solid ${borderColor};border-radius:8px;padding:6px;min-height:92px;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:13px;font-weight:900;color:${isSat ? '#be123c' : (isFri ? '#7e22ce' : '#334155')}">${d}</span>
+          ${isSat ? `<span style="font-size:9px;font-weight:800;color:#be123c;background:#ffe4e6;padding:1px 4px;border-radius:3px">${isEn ? 'Sat' : 'שבת'}</span>` : ''}
+        </div>
+        <div style="flex-grow:1;display:flex;flex-direction:column;justify-content:center">${cellContent}</div>
+        ${holTag}
+      </div>
+    `);
+  }
+
+  // Legend HTML
+  const legItemsHTML = docs.map((d) => {
+    const sty = getDocStyle(d.id) || { bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe' };
+    const nameStr = isEn ? d.en : `${dn(d)} <span style="font-size:10px;color:#64748b">(${d.en})</span>`;
+    return `
+      <div style="display:inline-flex;align-items:center;gap:6px;background:${sty.bg};border:1px solid ${sty.border};border-radius:6px;padding:4px 10px;font-size:11px;font-weight:800;color:${sty.text}">
+        <span style="width:8px;height:8px;border-radius:50%;background:${sty.text};display:inline-block"></span>
+        <span>${nameStr}</span>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div style="background:#ffffff;color:#0f172a;font-family:'Heebo',sans-serif;direction:${dirAttr};padding:4px">
+      <!-- TOP BANNER -->
+      <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2.5px solid #2563eb;padding-bottom:12px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;box-shadow:0 4px 12px rgba(37,99,235,0.3)">
+            🫀
+          </div>
+          <div>
+            <h1 style="font-size:21px;font-weight:900;color:#0f172a;margin:0;line-height:1.2">${deptTitle}</h1>
+            <div style="font-size:14px;font-weight:800;color:#2563eb;margin-top:3px">${schedSubtitle}</div>
+          </div>
+        </div>
+        <div style="text-align:${isEn ? 'right' : 'left'}">
+          <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:800;color:#1d4ed8">
+            📅 ${periodTitle}
+          </div>
+          <div style="font-size:10.5px;color:#94a3b8;margin-top:4px">${genDateLabel}</div>
+        </div>
+      </div>
+
+      <!-- MAIN 7-COLUMN LANDSCAPE CALENDAR GRID -->
+      <div style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;padding:12px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.03)">
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px">
+          ${hdrsHTML}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">
+          ${cells.join('')}
+        </div>
+      </div>
+
+      <!-- DOCTOR LEGEND BAR -->
+      <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:10px 14px">
+        <div style="font-size:11.5px;font-weight:900;color:#475569;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+          <span>👨‍⚕️</span> <span>${legendTitle}</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          ${legItemsHTML}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 // ── HTML SINGLE-PAGE DASHBOARD GENERATOR ──
 function buildSinglePageDashboardHTML(type, y, m){
   const docs = getDutyDocs();
